@@ -312,7 +312,7 @@
     color: var(--gray);
   }
 
-  /* Coming Soon corner ribbon */
+  /* Coming Soon corner ribbon — only shown on .soon cards */
   .ribbon-wrap {
     position: absolute; top: 0; right: 0;
     width: 80px; height: 80px; overflow: hidden; pointer-events: none;
@@ -377,7 +377,7 @@
     <div class="header-sep"></div>
     <div class="header-title">Markets &amp; <em>Derivatives</em></div>
     <div class="header-right">
-      <span class="module-count">2 of 4 live</span>
+      <span class="module-count">3 of 4 live</span>
       <div class="header-badge">Learning Lab</div>
     </div>
   </div>
@@ -392,8 +392,8 @@
     <p class="hero-sub">Four interactive modules covering options, futures, swaps, and portfolio protection. Adjust real parameters, see live payoff profiles, and stress-test your intuition against historical market events.</p>
     <div class="progress-bar">
       <span class="progress-label">Modules Live</span>
-      <div class="prog-seg prog-done"   ></div>
-      <div class="prog-seg prog-done"   ></div>
+      <div class="prog-seg prog-done"></div>
+      <div class="prog-seg prog-done"></div>
       <div class="prog-seg prog-done"></div>
       <div class="prog-seg prog-pending"></div>
       <span class="progress-frac">3 / 4</span>
@@ -475,10 +475,10 @@
         </div>
       </a>
 
-      <!-- MODULE 3 — FUTURES -->
-      <<a class="module-card live mod-futures d3" href="ch20-21-futures-options.html">
+      <!-- MODULE 3 — FUTURES (LIVE) -->
+      <a class="module-card live mod-futures d3" href="ch20-21-futures-options.html">
+        <div class="card-glow"></div>
         <div class="card-accent-bar"></div>
-        <div class="ribbon-wrap"><div class="ribbon">Soon</div></div>
         <div class="card-inner">
           <div class="card-top">
             <span class="card-num">Module 03</span>
@@ -487,7 +487,7 @@
           <span class="card-icon">⚡</span>
           <div class="card-category">Futures Contracts</div>
           <div class="card-title">Futures &amp; Forward Markets</div>
-          <div class="card-desc">How futures contracts lock in prices for future delivery. Explore basis risk, margin mechanics, contango, backwardation, and hedging with commodity and financial futures.</div>
+          <div class="card-desc">How futures contracts lock in prices for future delivery. Explore basis risk, margin mechanics, contango, backwardation, and hedging — anchored in live WTI crude oil market data and real OPEC events.</div>
           <div class="card-topics">
             <span class="topic-pill">Forward Pricing</span>
             <span class="topic-pill">Basis Risk</span>
@@ -497,19 +497,19 @@
             <span class="topic-pill">Commodity Hedges</span>
           </div>
           <div class="card-cta">
-           <span class="cta-label">Open Module →</span>
-<div class="card-arrow">↗</div>
+            <span class="cta-label">Open Module →</span>
+            <div class="card-arrow">↗</div>
           </div>
         </div>
         <div class="card-stats">
-          <div class="card-stat"><div class="cs-val">—</div><div class="cs-lbl">Strategies</div></div>
-          <div class="card-stat"><div class="cs-val">—</div><div class="cs-lbl">Scenarios</div></div>
-          <div class="card-stat"><div class="cs-val">—</div><div class="cs-lbl">Simulations</div></div>
-          <div class="card-stat"><div class="cs-val">Q3</div><div class="cs-lbl">Est. Release</div></div>
+          <div class="card-stat"><div class="cs-val">6</div><div class="cs-lbl">Mechanics</div></div>
+          <div class="card-stat"><div class="cs-val">3</div><div class="cs-lbl">Case Studies</div></div>
+          <div class="card-stat"><div class="cs-val">6</div><div class="cs-lbl">Quiz Questions</div></div>
+          <div class="card-stat"><div class="cs-val">Live</div><div class="cs-lbl">Simulator</div></div>
         </div>
       </a>
 
-      <!-- MODULE 4 — SWAPS -->
+      <!-- MODULE 4 — SWAPS (COMING SOON) -->
       <div class="module-card soon mod-swaps d4">
         <div class="card-accent-bar"></div>
         <div class="ribbon-wrap"><div class="ribbon">Soon</div></div>
@@ -555,7 +555,7 @@
       <div class="foot-sep"></div>
       <div class="foot-note">Interactive Learning Lab</div>
     </div>
-    <div class="foot-right">4 Modules · 2 Live · Designed for College Juniors</div>
+    <div class="foot-right">4 Modules · 3 Live · Designed for College Juniors</div>
   </div>
 </footer>
 
