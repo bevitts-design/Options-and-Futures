@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markets &amp; Derivatives — Interactive Learning Modules</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:        #0d1b2a;
+    --navy-mid:    #162032;
+    --navy-light:  #1e2e42;
+    --gold:        #c9a84c;
+    --gold-light:  #e8c97a;
+    --gold-pale:   #f5e8c0;
+    --ice:         #a8c5da;
+    --ice-pale:    #d6e8f2;
+    --white:       #f0efe8;
+    --gray:        #8a9bb0;
+    --border:      rgba(201,168,76,0.2);
+    --border-dim:  rgba(201,168,76,0.09);
+    --glow-gold:   0 0 32px rgba(201,168,76,0.18);
+    --green:       #3dd68c;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND RADIAL GLOW ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(201,168,76,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 60% at 80% 90%, rgba(168,197,218,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* ── GRID LINES ── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0 24px;
+  }
+  header .wrap { display: flex; align-items: center; gap: 16px; }
+  .header-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); opacity: 0.8;
+  }
+  .header-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(20px, 2.5vw, 28px);
+    color: var(--white); letter-spacing: -0.4px;
+  }
+  .header-title em { color: var(--gold); font-style: italic; }
+  .header-sep { width: 1px; height: 20px; background: var(--border); }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .header-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+    background: rgba(201,168,76,0.1); border: 1px solid var(--border);
+    color: var(--gold); padding: 5px 10px; border-radius: 4px;
+  }
+  .module-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--gray); letter-spacing: 0.06em;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 72px 0 64px;
+    border-bottom: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  .hero-watermark {
+    position: absolute; right: -16px; bottom: -28px;
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(100px, 18vw, 220px); font-style: italic;
+    color: rgba(201,168,76,0.035); line-height: 1;
+    pointer-events: none; user-select: none; letter-spacing: -4px;
+  }
+  .hero-kicker {
+    display: flex; align-items: center; gap: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 22px;
+    opacity: 0; animation: fadeUp 0.5s 0.1s ease forwards;
+  }
+  .hero-kicker::before {
+    content: ''; display: block;
+    width: 36px; height: 1px; background: var(--gold);
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(40px, 7vw, 78px);
+    line-height: 1.0; letter-spacing: -2px; margin-bottom: 24px;
+    opacity: 0; animation: fadeUp 0.55s 0.2s ease forwards;
+  }
+  .hero h1 em { color: var(--gold); font-style: italic; }
+  .hero-sub {
+    font-size: 15px; font-weight: 400;
+    color: var(--ice-pale); max-width: 530px; line-height: 1.75;
+    opacity: 0; animation: fadeUp 0.55s 0.3s ease forwards;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar {
+    display: flex; align-items: center; gap: 7px;
+    margin-top: 48px;
+    opacity: 0; animation: fadeUp 0.5s 0.42s ease forwards;
+  }
+  .progress-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--gray); white-space: nowrap; margin-right: 4px;
+  }
+  .prog-seg {
+    height: 3px; border-radius: 2px; flex: 1; transition: background 0.3s;
+  }
+  .prog-done    { background: var(--gold); }
+  .prog-pending { background: var(--navy-light); }
+  .progress-frac {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--gold); margin-left: 6px; white-space: nowrap;
+  }
+
+  /* ── MODULE SECTION ── */
+  .modules-section { padding: 60px 0 80px; }
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); opacity: 0.7; margin-bottom: 32px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  /* ── BASE MODULE CARD ── */
+  .module-card {
+    background: var(--navy-mid);
+    border: 1px solid var(--border-dim);
+    border-radius: 16px; overflow: hidden;
+    position: relative;
+    text-decoration: none; color: inherit; display: block;
+    opacity: 0; animation: fadeUp 0.6s ease forwards;
+  }
+  .module-card.d1 { animation-delay: 0.18s; }
+  .module-card.d2 { animation-delay: 0.28s; }
+  .module-card.d3 { animation-delay: 0.38s; }
+  .module-card.d4 { animation-delay: 0.48s; }
+
+  /* LIVE cards */
+  .module-card.live {
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .module-card.live:hover {
+    border-color: var(--gold);
+    transform: translateY(-6px);
+    box-shadow: var(--glow-gold), 0 20px 56px rgba(0,0,0,0.4);
+  }
+  .module-card.live:hover .card-accent-bar { transform: scaleX(1); }
+  .module-card.live:hover .card-glow       { opacity: 1; }
+  .module-card.live:hover .card-arrow      { transform: translate(3px,-3px); opacity: 1; }
+
+  /* SOON cards */
+  .module-card.soon { cursor: default; }
+  .module-card.soon .card-inner { opacity: 0.42; }
+  .module-card.soon .card-stats { opacity: 0.3; }
+
+  /* Card inner glow */
+  .card-glow {
+    position: absolute; inset: 0; border-radius: 16px;
+    background: linear-gradient(135deg, rgba(201,168,76,0.06) 0%, transparent 55%);
+    opacity: 0; transition: opacity 0.35s; pointer-events: none;
+  }
+
+  /* Bottom accent bar */
+  .card-accent-bar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.23,1,0.32,1);
+  }
+  .mod-options    .card-accent-bar { background: linear-gradient(90deg, #3dd68c, var(--gold)); }
+  .mod-protection .card-accent-bar { background: linear-gradient(90deg, var(--gold), var(--ice)); }
+  .mod-futures    .card-accent-bar { background: linear-gradient(90deg, #f0a040, #f06060); }
+  .mod-swaps      .card-accent-bar { background: linear-gradient(90deg, #a08fdf, #3ecfcf); }
+
+  .card-inner { padding: 32px 32px 28px; position: relative; }
+
+  .card-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .card-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--gray);
+  }
+  .card-status {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 4px;
+  }
+  .status-live {
+    background: rgba(61,214,140,0.12); border: 1px solid rgba(61,214,140,0.3);
+    color: var(--green);
+  }
+  .status-soon {
+    background: rgba(138,155,176,0.1); border: 1px solid rgba(138,155,176,0.2);
+    color: var(--gray);
+  }
+
+  .card-icon { font-size: 40px; line-height: 1; margin-bottom: 16px; display: block; }
+
+  .card-category {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .mod-options    .card-category { color: #3dd68c; }
+  .mod-protection .card-category { color: var(--gold); }
+  .mod-futures    .card-category { color: #f0a040; }
+  .mod-swaps      .card-category { color: #a08fdf; }
+  .soon .card-category { opacity: 0.5; }
+
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(24px, 3vw, 30px);
+    letter-spacing: -0.5px; line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .card-desc {
+    font-size: 13px; color: var(--gray); line-height: 1.65;
+    margin-bottom: 26px; max-width: 400px;
+  }
+
+  .card-topics { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 28px; }
+  .topic-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 4px 9px; border-radius: 4px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-dim); color: var(--gray);
+  }
+
+  .card-cta {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 20px; border-top: 1px solid var(--border-dim);
+  }
+  .cta-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  .live .cta-label { color: var(--gold); }
+  .soon .cta-label { color: var(--gray); }
+
+  .card-arrow {
+    width: 32px; height: 32px;
+    border: 1px solid var(--border); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: var(--gold); opacity: 0.6;
+    transition: all 0.25s ease;
+  }
+  .soon .card-arrow { color: var(--gray); opacity: 0.25; font-size: 16px; }
+
+  /* Stats strip */
+  .card-stats {
+    display: flex; gap: 0;
+    border-top: 1px solid var(--border-dim);
+  }
+  .card-stat {
+    flex: 1; padding: 14px 18px;
+    border-right: 1px solid var(--border-dim);
+    text-align: center;
+  }
+  .card-stat:last-child { border-right: none; }
+  .cs-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px; color: var(--white); margin-bottom: 3px;
+  }
+  .soon .cs-val { color: var(--gray); opacity: 0.45; }
+  .cs-lbl {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--gray);
+  }
+
+  /* Coming Soon corner ribbon */
+  .ribbon-wrap {
+    position: absolute; top: 0; right: 0;
+    width: 80px; height: 80px; overflow: hidden; pointer-events: none;
+  }
+  .ribbon {
+    position: absolute; top: 18px; right: -22px;
+    background: var(--navy-light); border: 1px solid var(--border-dim);
+    color: var(--gray); font-family: 'DM Mono', monospace;
+    font-size: 7px; letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 4px 28px; transform: rotate(45deg);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border-dim);
+    padding: 28px 0;
+  }
+  footer .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .foot-left { display: flex; align-items: center; gap: 14px; }
+  .foot-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 15px; color: var(--white); letter-spacing: -0.3px;
+  }
+  .foot-logo em { color: var(--gold); font-style: italic; }
+  .foot-sep { width: 1px; height: 14px; background: var(--border); }
+  .foot-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; color: var(--gray); letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .foot-right {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; color: var(--gray); letter-spacing: 0.08em;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 860px) {
+    .module-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 540px) {
+    .wrap { padding: 0 18px; }
+    .card-inner { padding: 24px 20px 20px; }
+    .header-sep, .module-count { display: none; }
+    .hero-watermark { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="wrap">
+    <div class="header-eyebrow">Interactive Modules</div>
+    <div class="header-sep"></div>
+    <div class="header-title">Markets &amp; <em>Derivatives</em></div>
+    <div class="header-right">
+      <span class="module-count">2 of 4 live</span>
+      <div class="header-badge">Learning Lab</div>
+    </div>
+  </div>
+</header>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-watermark">Derive</div>
+    <div class="hero-kicker">Derivatives · Risk · Strategy</div>
+    <h1>Understand the<br>Instruments that<br><em>Move</em> Markets</h1>
+    <p class="hero-sub">Four interactive modules covering options, futures, swaps, and portfolio protection. Adjust real parameters, see live payoff profiles, and stress-test your intuition against historical market events.</p>
+    <div class="progress-bar">
+      <span class="progress-label">Modules Live</span>
+      <div class="prog-seg prog-done"   ></div>
+      <div class="prog-seg prog-done"   ></div>
+      <div class="prog-seg prog-pending"></div>
+      <div class="prog-seg prog-pending"></div>
+      <span class="progress-frac">2 / 4</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── MODULES ── -->
+<section class="modules-section">
+  <div class="wrap">
+    <div class="section-label">All Modules</div>
+    <div class="module-grid">
+
+      <!-- MODULE 1 — OPTIONS -->
+      <a class="module-card live mod-options d1" href="options-explorer.html">
+        <div class="card-glow"></div>
+        <div class="card-accent-bar"></div>
+        <div class="card-inner">
+          <div class="card-top">
+            <span class="card-num">Module 01</span>
+            <span class="card-status status-live">● Live</span>
+          </div>
+          <span class="card-icon">📈</span>
+          <div class="card-category">Options Contracts</div>
+          <div class="card-title">Options Explorer</div>
+          <div class="card-desc">Pricing and payoff profiles for calls and puts. Interact with live charts across all four position types — adjust strike, premium, and contract size and watch the diagram update in real time.</div>
+          <div class="card-topics">
+            <span class="topic-pill">Long Call</span>
+            <span class="topic-pill">Short Call</span>
+            <span class="topic-pill">Long Put</span>
+            <span class="topic-pill">Short Put</span>
+            <span class="topic-pill">Breakeven Analysis</span>
+            <span class="topic-pill">Moneyness</span>
+          </div>
+          <div class="card-cta">
+            <span class="cta-label">Open Module →</span>
+            <div class="card-arrow">↗</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><div class="cs-val">4</div><div class="cs-lbl">Position Types</div></div>
+          <div class="card-stat"><div class="cs-val">3</div><div class="cs-lbl">Scenarios</div></div>
+          <div class="card-stat"><div class="cs-val">12</div><div class="cs-lbl">Key Terms</div></div>
+          <div class="card-stat"><div class="cs-val">Live</div><div class="cs-lbl">Charts</div></div>
+        </div>
+      </a>
+
+      <!-- MODULE 2 — PORTFOLIO PROTECTION -->
+      <a class="module-card live mod-protection d2" href="downside-protection.html">
+        <div class="card-glow"></div>
+        <div class="card-accent-bar"></div>
+        <div class="card-inner">
+          <div class="card-top">
+            <span class="card-num">Module 02</span>
+            <span class="card-status status-live">● Live</span>
+          </div>
+          <span class="card-icon">🛡️</span>
+          <div class="card-category">Risk Management</div>
+          <div class="card-title">Downside Protection</div>
+          <div class="card-desc">Six strategies for defending portfolios against market declines. Simulate crashes from 2008, 2020, and 2022 to compare how protective puts, collars, and diversification hold up under real stress.</div>
+          <div class="card-topics">
+            <span class="topic-pill">Protective Put</span>
+            <span class="topic-pill">Collar Strategy</span>
+            <span class="topic-pill">Bear Put Spread</span>
+            <span class="topic-pill">Diversification</span>
+            <span class="topic-pill">Inverse ETFs</span>
+            <span class="topic-pill">Stop-Loss Orders</span>
+          </div>
+          <div class="card-cta">
+            <span class="cta-label">Open Module →</span>
+            <div class="card-arrow">↗</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><div class="cs-val">6</div><div class="cs-lbl">Strategies</div></div>
+          <div class="card-stat"><div class="cs-val">3</div><div class="cs-lbl">Crash Tests</div></div>
+          <div class="card-stat"><div class="cs-val">4</div><div class="cs-lbl">Quiz Questions</div></div>
+          <div class="card-stat"><div class="cs-val">Live</div><div class="cs-lbl">Simulator</div></div>
+        </div>
+      </a>
+
+      <!-- MODULE 3 — FUTURES -->
+      <div class="module-card soon mod-futures d3">
+        <div class="card-accent-bar"></div>
+        <div class="ribbon-wrap"><div class="ribbon">Soon</div></div>
+        <div class="card-inner">
+          <div class="card-top">
+            <span class="card-num">Module 03</span>
+            <span class="card-status status-soon">Coming Soon</span>
+          </div>
+          <span class="card-icon">⚡</span>
+          <div class="card-category">Futures Contracts</div>
+          <div class="card-title">Futures &amp; Forward Markets</div>
+          <div class="card-desc">How futures contracts lock in prices for future delivery. Explore basis risk, margin mechanics, contango, backwardation, and hedging with commodity and financial futures.</div>
+          <div class="card-topics">
+            <span class="topic-pill">Forward Pricing</span>
+            <span class="topic-pill">Basis Risk</span>
+            <span class="topic-pill">Mark-to-Market</span>
+            <span class="topic-pill">Contango</span>
+            <span class="topic-pill">Backwardation</span>
+            <span class="topic-pill">Commodity Hedges</span>
+          </div>
+          <div class="card-cta">
+            <span class="cta-label">In Development</span>
+            <div class="card-arrow">🔒</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><div class="cs-val">—</div><div class="cs-lbl">Strategies</div></div>
+          <div class="card-stat"><div class="cs-val">—</div><div class="cs-lbl">Scenarios</div></div>
+          <div class="card-stat"><div class="cs-val">—</div><div class="cs-lbl">Simulations</div></div>
+          <div class="card-stat"><div class="cs-val">Q3</div><div class="cs-lbl">Est. Release</div></div>
+        </div>
+      </div>
+
+      <!-- MODULE 4 — SWAPS -->
+      <div class="module-card soon mod-swaps d4">
+        <div class="card-accent-bar"></div>
+        <div class="ribbon-wrap"><div class="ribbon">Soon</div></div>
+        <div class="card-inner">
+          <div class="card-top">
+            <span class="card-num">Module 04</span>
+            <span class="card-status status-soon">Coming Soon</span>
+          </div>
+          <span class="card-icon">🔄</span>
+          <div class="card-category">Swap Contracts</div>
+          <div class="card-title">Swaps &amp; Rate Derivatives</div>
+          <div class="card-desc">How counterparties exchange cash flows through interest rate, currency, and credit default swaps. Model swap valuation, duration hedging, and the transition from LIBOR to SOFR.</div>
+          <div class="card-topics">
+            <span class="topic-pill">Interest Rate Swaps</span>
+            <span class="topic-pill">Currency Swaps</span>
+            <span class="topic-pill">Credit Default Swaps</span>
+            <span class="topic-pill">Swap Valuation</span>
+            <span class="topic-pill">SOFR</span>
+            <span class="topic-pill">Duration Hedging</span>
+          </div>
+          <div class="card-cta">
+            <span class="cta-label">In Development</span>
+            <div class="card-arrow">🔒</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><div class="cs-val">—</div><div class="cs-lbl">Swap Types</div></div>
+          <div class="card-stat"><div class="cs-val">—</div><div class="cs-lbl">Scenarios</div></div>
+          <div class="card-stat"><div class="cs-val">—</div><div class="cs-lbl">Simulations</div></div>
+          <div class="card-stat"><div class="cs-val">Q4</div><div class="cs-lbl">Est. Release</div></div>
+        </div>
+      </div>
+
+    </div><!-- /module-grid -->
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="wrap">
+    <div class="foot-left">
+      <div class="foot-logo">Markets &amp; <em>Derivatives</em></div>
+      <div class="foot-sep"></div>
+      <div class="foot-note">Interactive Learning Lab</div>
+    </div>
+    <div class="foot-right">4 Modules · 2 Live · Designed for College Juniors</div>
+  </div>
+</footer>
+
+</body>
+</html>

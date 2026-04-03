@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Options Explorer — Pricing & Return Profiles</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0d1b2a;
+    --navy-mid: #162032;
+    --navy-light: #1e2e42;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-pale: #f5e8c0;
+    --ice: #a8c5da;
+    --ice-pale: #d6e8f2;
+    --call-green: #3dd68c;
+    --call-green-dim: #1a6641;
+    --put-red: #f06060;
+    --put-red-dim: #7a2020;
+    --white: #f0efe8;
+    --gray: #8a9bb0;
+    --border: rgba(201,168,76,0.2);
+    --glow-gold: 0 0 24px rgba(201,168,76,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(201,168,76,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 60% at 80% 90%, rgba(168,197,218,0.06) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── GRID LINES ── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none; z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0 24px;
+  }
+  header .wrap { display: flex; align-items: baseline; gap: 16px; }
+  .header-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.8;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(22px, 3vw, 32px);
+    color: var(--white);
+    letter-spacing: -0.5px;
+  }
+  header h1 em { color: var(--gold); font-style: italic; }
+  .header-badge {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid var(--border);
+    color: var(--gold);
+    padding: 5px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ── HERO SECTION ── */
+  .hero {
+    padding: 52px 0 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+  .hero-text h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 4vw, 52px);
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 18px;
+  }
+  .hero-text h2 .accent { color: var(--gold); }
+  .hero-text p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ice-pale);
+    opacity: 0.85;
+    max-width: 420px;
+  }
+  .concept-cards { display: flex; flex-direction: column; gap: 14px; }
+  .concept-card {
+    background: var(--navy-light);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 22px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .concept-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px;
+    transition: background 0.25s;
+  }
+  .concept-card.call::before { background: var(--call-green); }
+  .concept-card.put::before  { background: var(--put-red); }
+  .concept-card:hover { transform: translateX(4px); box-shadow: var(--glow-gold); }
+  .concept-card-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .concept-card.call .concept-card-label { color: var(--call-green); }
+  .concept-card.put  .concept-card-label { color: var(--put-red); }
+  .concept-card h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    margin-bottom: 5px;
+  }
+  .concept-card p { font-size: 13px; color: var(--gray); line-height: 1.5; }
+
+  /* ── TABS ── */
+  .tabs-section { padding: 48px 0; }
+  .tab-nav {
+    display: flex; gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 40px;
+    width: fit-content;
+  }
+  .tab-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    background: transparent;
+    border: none;
+    color: var(--gray);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-right: 1px solid var(--border);
+  }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn.active { background: var(--gold); color: var(--navy); font-weight: 600; }
+  .tab-btn:not(.active):hover { background: rgba(201,168,76,0.08); color: var(--white); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* ── INTERACTIVE LAYOUT ── */
+  .interactive-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+
+  /* ── CONTROLS PANEL ── */
+  .controls-panel {
+    background: var(--navy-mid);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    position: sticky;
+    top: 24px;
+  }
+  .panel-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .control-group { margin-bottom: 22px; }
+  .control-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ice-pale);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .control-value {
+    font-family: 'DM Mono', monospace;
+    color: var(--gold);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%; height: 3px;
+    background: var(--navy-light);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(201,168,76,0.5);
+    transition: transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* ── STATS ROW ── */
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-box {
+    background: var(--navy-light);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .stat-box .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+    margin-bottom: 4px;
+  }
+  .stat-box .stat-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--white);
+  }
+  .stat-box.positive .stat-val { color: var(--call-green); }
+  .stat-box.negative .stat-val { color: var(--put-red); }
+  .stat-box.highlight .stat-val { color: var(--gold); }
+
+  /* ── PAYOFF CHART AREA ── */
+  .chart-area {
+    background: var(--navy-mid);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .chart-header {
+    padding: 20px 28px 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 18px;
+  }
+  .chart-header h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+  }
+  .chart-toggle-group {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+  }
+  .chart-toggle {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--gray);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chart-toggle.on { background: rgba(201,168,76,0.15); color: var(--gold); border-color: var(--gold); }
+
+  .canvas-wrap { padding: 16px 20px 12px; position: relative; }
+  canvas { display: block; width: 100% !important; }
+
+  /* ── INSIGHT BOXES ── */
+  .insights { padding: 0 28px 28px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .insight-box {
+    background: var(--navy-light);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .insight-box .ins-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .insight-box .ins-text {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--ice-pale);
+  }
+  .ins-text strong { color: var(--white); }
+
+  /* ── STRATEGY SCENARIOS ── */
+  .scenarios-section { padding-bottom: 60px; }
+  .section-header {
+    margin-bottom: 32px;
+  }
+  .section-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(24px, 3vw, 36px);
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .section-header p { font-size: 14px; color: var(--gray); }
+
+  .scenario-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
+  .scenario-card {
+    background: var(--navy-mid);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .scenario-card::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(201,168,76,0.04) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .scenario-card:hover { border-color: var(--gold); transform: translateY(-3px); box-shadow: var(--glow-gold); }
+  .scenario-card:hover::after { opacity: 1; }
+  .scenario-card.active { border-color: var(--gold); background: rgba(201,168,76,0.06); }
+  .sc-icon { font-size: 28px; margin-bottom: 10px; }
+  .sc-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .sc-title { font-family: 'DM Serif Display', serif; font-size: 17px; margin-bottom: 8px; }
+  .sc-desc { font-size: 12px; color: var(--gray); line-height: 1.5; }
+
+  /* ── SCENARIO DETAIL ── */
+  .scenario-detail {
+    background: var(--navy-mid);
+    border: 1px solid var(--gold);
+    border-radius: 14px;
+    padding: 32px;
+    display: none;
+    animation: fadeUp 0.3s ease;
+  }
+  .scenario-detail.active { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .sd-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .sd-title { font-family: 'DM Serif Display', serif; font-size: 26px; margin-bottom: 14px; }
+  .sd-body { font-size: 14px; line-height: 1.8; color: var(--ice-pale); margin-bottom: 20px; }
+  .sd-payoff-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .sd-payoff-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sd-payoff-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(201,168,76,0.08);
+    color: var(--ice-pale);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+  .sd-payoff-table tr:last-child td { border-bottom: none; }
+  .td-pos { color: var(--call-green); }
+  .td-neg { color: var(--put-red); }
+  .td-neu { color: var(--gray); }
+
+  /* ── GLOSSARY ── */
+  .glossary-section {
+    border-top: 1px solid var(--border);
+    padding: 48px 0 60px;
+  }
+  .glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; }
+  .glossary-item {
+    border-left: 2px solid var(--gold);
+    padding: 14px 18px;
+    background: rgba(201,168,76,0.03);
+  }
+  .g-term {
+    font-family: 'DM Serif Display', serif;
+    font-size: 16px;
+    margin-bottom: 6px;
+    color: var(--white);
+  }
+  .g-def { font-size: 12px; color: var(--gray); line-height: 1.6; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .interactive-grid { grid-template-columns: 1fr; }
+    .controls-panel { position: static; }
+    .scenario-grid { grid-template-columns: 1fr 1fr; }
+    .glossary-grid { grid-template-columns: 1fr 1fr; }
+    .scenario-detail.active { grid-template-columns: 1fr; }
+    .insights { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .wrap { padding: 0 16px; }
+    .scenario-grid { grid-template-columns: 1fr; }
+    .glossary-grid { grid-template-columns: 1fr; }
+    .insights { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ── TOOLTIP ── */
+  .tooltip-wrap { position: relative; display: inline-block; cursor: help; }
+  .tooltip-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 14px; height: 14px;
+    border-radius: 50%; border: 1px solid var(--gold);
+    font-size: 9px; color: var(--gold); margin-left: 5px;
+    font-family: 'DM Mono', monospace;
+  }
+  .tooltip-box {
+    position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
+    background: var(--navy);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    width: 200px;
+    font-size: 11px;
+    color: var(--ice-pale);
+    line-height: 1.5;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .tooltip-wrap:hover .tooltip-box { opacity: 1; }
+
+  /* ── LEGEND ── */
+  .legend { display: flex; gap: 20px; padding: 10px 20px 0; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--gray); font-family: 'DM Mono', monospace; }
+  .legend-line { width: 20px; height: 2px; border-radius: 1px; }
+  .legend-dash { width: 20px; height: 2px; border-radius: 1px; background: repeating-linear-gradient(90deg, currentColor 0, currentColor 4px, transparent 4px, transparent 8px); }
+
+  /* ── OPTIONS PRIMER CALLOUT ── */
+  .primer-callout {
+    background: linear-gradient(135deg, rgba(201,168,76,0.08) 0%, rgba(168,197,218,0.04) 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 48px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 24px;
+    align-items: center;
+  }
+  .primer-icon { font-size: 40px; }
+  .primer-title { font-family: 'DM Serif Display', serif; font-size: 19px; margin-bottom: 8px; }
+  .primer-body { font-size: 13px; color: var(--ice-pale); line-height: 1.7; }
+  .primer-body strong { color: var(--gold); }
+
+  /* ── FORMULA BLOCK ── */
+  .formula-block {
+    background: var(--navy);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 20px;
+    margin: 16px 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--gold-light);
+    line-height: 1.8;
+  }
+  .formula-block span { color: var(--gray); font-size: 11px; }
+
+  /* animations */
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .mono { font-family: 'DM Mono', monospace; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="wrap">
+    <div>
+      <div class="header-eyebrow">BUS 331 · Investments</div>
+      <h1>Options <em>Explorer</em></h1>
+    </div>
+    <div class="header-badge">Interactive Module</div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-text">
+        <h2>Master the Building Blocks of <span class="accent">Derivatives</span></h2>
+        <p>Options contracts give you the right — but not the obligation — to buy or sell an asset at a fixed price. This module walks you through how calls and puts are priced and how their payoff profiles shape investment strategy.</p>
+      </div>
+      <div class="concept-cards">
+        <div class="concept-card call" onclick="switchTab('call')">
+          <div class="concept-card-label">📈 Bullish instrument</div>
+          <h3>Call Option</h3>
+          <p>Right to <strong>buy</strong> the underlying at the strike price. Profits when the stock rises above strike + premium paid.</p>
+        </div>
+        <div class="concept-card put" onclick="switchTab('put')">
+          <div class="concept-card-label">📉 Bearish instrument</div>
+          <h3>Put Option</h3>
+          <p>Right to <strong>sell</strong> the underlying at the strike price. Profits when the stock falls below strike − premium paid.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TABS: INTERACTIVE -->
+<section class="tabs-section">
+  <div class="wrap">
+
+    <nav class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('call')">Long Call</button>
+      <button class="tab-btn" onclick="switchTab('call-short')">Short Call</button>
+      <button class="tab-btn" onclick="switchTab('put')">Long Put</button>
+      <button class="tab-btn" onclick="switchTab('put-short')">Short Put</button>
+    </nav>
+
+    <!-- LONG CALL -->
+    <div class="tab-pane active" id="pane-call">
+      <div class="interactive-grid">
+        <div class="controls-panel">
+          <div class="panel-title">Position Parameters</div>
+
+          <div class="control-group">
+            <label>Current Stock Price <span class="control-value" id="call-s-val">$100</span>
+              <span class="tooltip-wrap"><span class="tooltip-icon">?</span><span class="tooltip-box">The current market price of the underlying stock (S). Your option's profitability depends on how S compares to the strike.</span></span>
+            </label>
+            <input type="range" id="call-s" min="60" max="140" value="100" step="1" oninput="updateCall()">
+          </div>
+          <div class="control-group">
+            <label>Strike Price (K) <span class="control-value" id="call-k-val">$100</span>
+              <span class="tooltip-wrap"><span class="tooltip-icon">?</span><span class="tooltip-box">The price at which you can exercise your right to buy. Set when you enter the contract.</span></span>
+            </label>
+            <input type="range" id="call-k" min="60" max="140" value="100" step="1" oninput="updateCall()">
+          </div>
+          <div class="control-group">
+            <label>Premium Paid (c) <span class="control-value" id="call-p-val">$5.00</span>
+              <span class="tooltip-wrap"><span class="tooltip-icon">?</span><span class="tooltip-box">The upfront cost of buying the call option. This is your maximum loss if the option expires worthless.</span></span>
+            </label>
+            <input type="range" id="call-p" min="1" max="20" value="5" step="0.5" oninput="updateCall()">
+          </div>
+          <div class="control-group">
+            <label>Contracts (100 shares ea.) <span class="control-value" id="call-n-val">1</span></label>
+            <input type="range" id="call-n" min="1" max="10" value="1" step="1" oninput="updateCall()">
+          </div>
+
+          <div class="divider"></div>
+          <div class="stats-row">
+            <div class="stat-box">
+              <div class="stat-label">Breakeven</div>
+              <div class="stat-val" id="call-be">$105</div>
+            </div>
+            <div class="stat-box negative">
+              <div class="stat-label">Max Loss</div>
+              <div class="stat-val" id="call-ml">−$500</div>
+            </div>
+            <div class="stat-box positive">
+              <div class="stat-label">At Expiry P&L</div>
+              <div class="stat-val" id="call-pnl">—</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Moneyness</div>
+              <div class="stat-val mono" id="call-mon">ATM</div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="formula-block">
+            Payoff = max(S<sub>T</sub> − K, 0)<br>
+            Profit = Payoff − <em>c</em><br>
+            <span>where S<sub>T</sub> = price at expiry</span>
+          </div>
+        </div>
+
+        <div class="chart-area">
+          <div class="chart-header">
+            <h3>Payoff & Profit at Expiry</h3>
+            <div class="chart-toggle-group">
+              <button class="chart-toggle on" id="call-tog-payoff" onclick="toggleLine('call','payoff')">Payoff</button>
+              <button class="chart-toggle on" id="call-tog-profit" onclick="toggleLine('call','profit')">Profit</button>
+              <button class="chart-toggle on" id="call-tog-spot"   onclick="toggleLine('call','spot')">Current S</button>
+            </div>
+          </div>
+          <div class="legend" id="call-legend">
+            <div class="legend-item"><div class="legend-line" style="background:var(--call-green)"></div> Payoff</div>
+            <div class="legend-item"><div class="legend-line" style="background:var(--gold)"></div> Profit</div>
+            <div class="legend-item"><div class="legend-line" style="background:var(--ice); opacity:.5; border-top:1px dashed var(--ice)"></div> Current S</div>
+          </div>
+          <div class="canvas-wrap"><canvas id="call-chart" height="280"></canvas></div>
+          <div class="insights">
+            <div class="insight-box">
+              <div class="ins-label">Max Loss</div>
+              <div class="ins-text">Capped at the <strong>premium paid</strong>. The worst case is the option expires worthless — you lose only what you paid.</div>
+            </div>
+            <div class="insight-box">
+              <div class="ins-label">Upside</div>
+              <div class="ins-text"><strong>Theoretically unlimited.</strong> Every dollar above the breakeven is pure profit — leverage in action.</div>
+            </div>
+            <div class="insight-box">
+              <div class="ins-label">Key Insight</div>
+              <div class="ins-text">A long call is a <strong>leveraged bullish bet</strong>. You control 100 shares for a fraction of the cost of owning them.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHORT CALL -->
+    <div class="tab-pane" id="pane-call-short">
+      <div class="interactive-grid">
+        <div class="controls-panel">
+          <div class="panel-title">Position Parameters</div>
+          <div class="control-group">
+            <label>Current Stock Price <span class="control-value" id="sc-s-val">$100</span></label>
+            <input type="range" id="sc-s" min="60" max="140" value="100" step="1" oninput="updateSC()">
+          </div>
+          <div class="control-group">
+            <label>Strike Price (K) <span class="control-value" id="sc-k-val">$100</span></label>
+            <input type="range" id="sc-k" min="60" max="140" value="100" step="1" oninput="updateSC()">
+          </div>
+          <div class="control-group">
+            <label>Premium Received (c) <span class="control-value" id="sc-p-val">$5.00</span></label>
+            <input type="range" id="sc-p" min="1" max="20" value="5" step="0.5" oninput="updateSC()">
+          </div>
+          <div class="control-group">
+            <label>Contracts <span class="control-value" id="sc-n-val">1</span></label>
+            <input type="range" id="sc-n" min="1" max="10" value="1" step="1" oninput="updateSC()">
+          </div>
+          <div class="divider"></div>
+          <div class="stats-row">
+            <div class="stat-box"><div class="stat-label">Breakeven</div><div class="stat-val" id="sc-be">$105</div></div>
+            <div class="stat-box positive"><div class="stat-label">Max Gain</div><div class="stat-val" id="sc-mg">$500</div></div>
+            <div class="stat-box negative"><div class="stat-label">At Expiry P&L</div><div class="stat-val" id="sc-pnl">—</div></div>
+            <div class="stat-box"><div class="stat-label">Moneyness</div><div class="stat-val mono" id="sc-mon">ATM</div></div>
+          </div>
+          <div class="divider"></div>
+          <div class="formula-block">
+            Profit = <em>c</em> − max(S<sub>T</sub> − K, 0)<br>
+            <span>You keep premium if S<sub>T</sub> ≤ K</span>
+          </div>
+        </div>
+        <div class="chart-area">
+          <div class="chart-header">
+            <h3>Short Call — Payoff & Profit</h3>
+            <div class="chart-toggle-group">
+              <button class="chart-toggle on" id="sc-tog-payoff" onclick="toggleLine('sc','payoff')">Payoff</button>
+              <button class="chart-toggle on" id="sc-tog-profit" onclick="toggleLine('sc','profit')">Profit</button>
+              <button class="chart-toggle on" id="sc-tog-spot"   onclick="toggleLine('sc','spot')">Current S</button>
+            </div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-line" style="background:var(--put-red)"></div> Payoff</div>
+            <div class="legend-item"><div class="legend-line" style="background:var(--gold)"></div> Profit</div>
+            <div class="legend-item"><div class="legend-line" style="background:var(--ice); opacity:.5"></div> Current S</div>
+          </div>
+          <div class="canvas-wrap"><canvas id="sc-chart" height="280"></canvas></div>
+          <div class="insights">
+            <div class="insight-box">
+              <div class="ins-label">Max Gain</div>
+              <div class="ins-text">Capped at the <strong>premium received</strong> upfront. Best case: stock stays flat or falls.</div>
+            </div>
+            <div class="insight-box">
+              <div class="ins-label">Risk Profile</div>
+              <div class="ins-text"><strong>Unlimited downside.</strong> If the stock rockets, you must sell at strike — losses grow with every dollar gained.</div>
+            </div>
+            <div class="insight-box">
+              <div class="ins-label">Who does this?</div>
+              <div class="ins-text">Writers who are <strong>neutral-to-bearish</strong>, often as a covered call against stock they already hold.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LONG PUT -->
+    <div class="tab-pane" id="pane-put">
+      <div class="interactive-grid">
+        <div class="controls-panel">
+          <div class="panel-title">Position Parameters</div>
+          <div class="control-group">
+            <label>Current Stock Price <span class="control-value" id="put-s-val">$100</span></label>
+            <input type="range" id="put-s" min="60" max="140" value="100" step="1" oninput="updatePut()">
+          </div>
+          <div class="control-group">
+            <label>Strike Price (K) <span class="control-value" id="put-k-val">$100</span></label>
+            <input type="range" id="put-k" min="60" max="140" value="100" step="1" oninput="updatePut()">
+          </div>
+          <div class="control-group">
+            <label>Premium Paid (p) <span class="control-value" id="put-p-val">$5.00</span></label>
+            <input type="range" id="put-p" min="1" max="20" value="5" step="0.5" oninput="updatePut()">
+          </div>
+          <div class="control-group">
+            <label>Contracts <span class="control-value" id="put-n-val">1</span></label>
+            <input type="range" id="put-n" min="1" max="10" value="1" step="1" oninput="updatePut()">
+          </div>
+          <div class="divider"></div>
+          <div class="stats-row">
+            <div class="stat-box"><div class="stat-label">Breakeven</div><div class="stat-val" id="put-be">$95</div></div>
+            <div class="stat-box negative"><div class="stat-label">Max Loss</div><div class="stat-val" id="put-ml">−$500</div></div>
+            <div class="stat-box positive"><div class="stat-label">At Expiry P&L</div><div class="stat-val" id="put-pnl">—</div></div>
+            <div class="stat-box"><div class="stat-label">Moneyness</div><div class="stat-val mono" id="put-mon">ATM</div></div>
+          </div>
+          <div class="divider"></div>
+          <div class="formula-block">
+            Payoff = max(K − S<sub>T</sub>, 0)<br>
+            Profit = Payoff − <em>p</em><br>
+            <span>Max profit = K − p (if S<sub>T</sub> → 0)</span>
+          </div>
+        </div>
+        <div class="chart-area">
+          <div class="chart-header">
+            <h3>Long Put — Payoff & Profit</h3>
+            <div class="chart-toggle-group">
+              <button class="chart-toggle on" id="put-tog-payoff" onclick="toggleLine('put','payoff')">Payoff</button>
+              <button class="chart-toggle on" id="put-tog-profit" onclick="toggleLine('put','profit')">Profit</button>
+              <button class="chart-toggle on" id="put-tog-spot"   onclick="toggleLine('put','spot')">Current S</button>
+            </div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-line" style="background:var(--put-red)"></div> Payoff</div>
+            <div class="legend-item"><div class="legend-line" style="background:var(--gold)"></div> Profit</div>
+            <div class="legend-item"><div class="legend-line" style="background:var(--ice); opacity:.5"></div> Current S</div>
+          </div>
+          <div class="canvas-wrap"><canvas id="put-chart" height="280"></canvas></div>
+          <div class="insights">
+            <div class="insight-box">
+              <div class="ins-label">Max Loss</div>
+              <div class="ins-text">Limited to the <strong>premium paid</strong>. If the stock goes up, you simply don't exercise.</div>
+            </div>
+            <div class="insight-box">
+              <div class="ins-label">Max Gain</div>
+              <div class="ins-text">Capped at <strong>K − premium</strong> (stock can't go below $0). Still a powerful short-side bet.</div>
+            </div>
+            <div class="insight-box">
+              <div class="ins-label">Key Use Case</div>
+              <div class="ins-text"><strong>Portfolio insurance.</strong> Holding a put against stock you own protects against a sharp decline.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHORT PUT -->
+    <div class="tab-pane" id="pane-put-short">
+      <div class="interactive-grid">
+        <div class="controls-panel">
+          <div class="panel-title">Position Parameters</div>
+          <div class="control-group">
+            <label>Current Stock Price <span class="control-value" id="sp-s-val">$100</span></label>
+            <input type="range" id="sp-s" min="60" max="140" value="100" step="1" oninput="updateSP()">
+          </div>
+          <div class="control-group">
+            <label>Strike Price (K) <span class="control-value" id="sp-k-val">$100</span></label>
+            <input type="range" id="sp-k" min="60" max="140" value="100" step="1" oninput="updateSP()">
+          </div>
+          <div class="control-group">
+            <label>Premium Received (p) <span class="control-value" id="sp-p-val">$5.00</span></label>
+            <input type="range" id="sp-p" min="1" max="20" value="5" step="0.5" oninput="updateSP()">
+          </div>
+          <div class="control-group">
+            <label>Contracts <span class="control-value" id="sp-n-val">1</span></label>
+            <input type="range" id="sp-n" min="1" max="10" value="1" step="1" oninput="updateSP()">
+          </div>
+          <div class="divider"></div>
+          <div class="stats-row">
+            <div class="stat-box"><div class="stat-label">Breakeven</div><div class="stat-val" id="sp-be">$95</div></div>
+            <div class="stat-box positive"><div class="stat-label">Max Gain</div><div class="stat-val" id="sp-mg">$500</div></div>
+            <div class="stat-box negative"><div class="stat-label">At Expiry P&L</div><div class="stat-val" id="sp-pnl">—</div></div>
+            <div class="stat-box"><div class="stat-label">Moneyness</div><div class="stat-val mono" id="sp-mon">ATM</div></div>
+          </div>
+          <div class="divider"></div>
+          <div class="formula-block">
+            Profit = <em>p</em> − max(K − S<sub>T</sub>, 0)<br>
+            <span>You keep premium if S<sub>T</sub> ≥ K</span>
+          </div>
+        </div>
+        <div class="chart-area">
+          <div class="chart-header">
+            <h3>Short Put — Payoff & Profit</h3>
+            <div class="chart-toggle-group">
+              <button class="chart-toggle on" id="sp-tog-payoff" onclick="toggleLine('sp','payoff')">Payoff</button>
+              <button class="chart-toggle on" id="sp-tog-profit" onclick="toggleLine('sp','profit')">Profit</button>
+              <button class="chart-toggle on" id="sp-tog-spot"   onclick="toggleLine('sp','spot')">Current S</button>
+            </div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-line" style="background:var(--call-green)"></div> Payoff</div>
+            <div class="legend-item"><div class="legend-line" style="background:var(--gold)"></div> Profit</div>
+            <div class="legend-item"><div class="legend-line" style="background:var(--ice); opacity:.5"></div> Current S</div>
+          </div>
+          <div class="canvas-wrap"><canvas id="sp-chart" height="280"></canvas></div>
+          <div class="insights">
+            <div class="insight-box">
+              <div class="ins-label">Max Gain</div>
+              <div class="ins-text">Capped at the <strong>premium received</strong>. Best case: stock stays above strike and option expires worthless.</div>
+            </div>
+            <div class="insight-box">
+              <div class="ins-label">Risk Profile</div>
+              <div class="ins-text">Large downside if stock collapses — you must <strong>buy at strike</strong> even as the market price tanks.</div>
+            </div>
+            <div class="insight-box">
+              <div class="ins-label">Bullish Strategy</div>
+              <div class="ins-text">Used by investors who want to <strong>buy a stock cheaper</strong>, collecting premium while they wait for a pullback.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /wrap -->
+</section>
+
+<!-- SCENARIOS -->
+<section class="scenarios-section">
+  <div class="wrap">
+    <div class="section-header">
+      <h2>Real-World Scenarios</h2>
+      <p>Click a scenario to see the option strategy, payoff structure, and outcome analysis.</p>
+    </div>
+
+    <div class="scenario-grid">
+      <div class="scenario-card" id="sc-card-0" onclick="showScenario(0)">
+        <div class="sc-icon">🍎</div>
+        <div class="sc-label">Bullish bet</div>
+        <div class="sc-title">AAPL Earnings Play</div>
+        <div class="sc-desc">Anticipating a strong earnings surprise before the quarterly report. Low cost, high leverage.</div>
+      </div>
+      <div class="scenario-card" id="sc-card-1" onclick="showScenario(1)">
+        <div class="sc-icon">🛡️</div>
+        <div class="sc-label">Downside protection</div>
+        <div class="sc-title">Protective Put</div>
+        <div class="sc-desc">You own 100 shares of MSFT and fear a market correction. Use puts as portfolio insurance.</div>
+      </div>
+      <div class="scenario-card" id="sc-card-2" onclick="showScenario(2)">
+        <div class="sc-icon">💰</div>
+        <div class="sc-label">Income generation</div>
+        <div class="sc-title">Covered Call</div>
+        <div class="sc-desc">Already long 100 shares of SPY. Sell a call to collect premium and enhance yield in a flat market.</div>
+      </div>
+    </div>
+
+    <div class="scenario-detail" id="scenario-detail"></div>
+  </div>
+</section>
+
+<!-- GLOSSARY -->
+<section class="glossary-section">
+  <div class="wrap">
+    <div class="section-header">
+      <h2>Key Terms</h2>
+      <p>The vocabulary you need to read option chains and discuss strategies fluently.</p>
+    </div>
+    <div class="glossary-grid">
+      <div class="glossary-item"><div class="g-term">Strike Price (K)</div><div class="g-def">The fixed price at which the holder can buy (call) or sell (put) the underlying asset.</div></div>
+      <div class="glossary-item"><div class="g-term">Premium</div><div class="g-def">The market price of the option contract — what a buyer pays and a writer receives upfront.</div></div>
+      <div class="glossary-item"><div class="g-term">Expiration Date</div><div class="g-def">The date on which the option expires. After this, the contract has no value.</div></div>
+      <div class="glossary-item"><div class="g-term">In-the-Money (ITM)</div><div class="g-def">Call: S > K. Put: S < K. The option has intrinsic value and would profit if exercised today.</div></div>
+      <div class="glossary-item"><div class="g-term">Out-of-the-Money (OTM)</div><div class="g-def">Call: S < K. Put: S > K. No intrinsic value — option would be worthless if exercised now.</div></div>
+      <div class="glossary-item"><div class="g-term">At-the-Money (ATM)</div><div class="g-def">S ≈ K. The stock price equals (or is very close to) the strike price.</div></div>
+      <div class="glossary-item"><div class="g-term">Intrinsic Value</div><div class="g-def">The immediate exercise value: max(S − K, 0) for calls; max(K − S, 0) for puts.</div></div>
+      <div class="glossary-item"><div class="g-term">Time Value</div><div class="g-def">Premium minus intrinsic value. Reflects the chance the option moves ITM before expiry. Decays over time.</div></div>
+      <div class="glossary-item"><div class="g-term">Breakeven Point</div><div class="g-def">The stock price at expiry where P&L = 0. Long call: K + c. Long put: K − p.</div></div>
+      <div class="glossary-item"><div class="g-term">Put-Call Parity</div><div class="g-def">c − p = S − Ke^(−rT). Links call and put prices; prevents arbitrage.</div></div>
+      <div class="glossary-item"><div class="g-term">American vs. European</div><div class="g-def">American: exercise any time before expiry. European: exercise only at expiry. Most equity options are American.</div></div>
+      <div class="glossary-item"><div class="g-term">Open Interest</div><div class="g-def">The total number of outstanding option contracts not yet settled. Indicates market participation.</div></div>
+    </div>
+  </div>
+</section>
+
+<script>
+// ─────────────────────────────────────
+// CHART ENGINE
+// ─────────────────────────────────────
+const CSS = { navy:'#0d1b2a', navyMid:'#162032', navyLight:'#1e2e42', gold:'#c9a84c',
+  goldLight:'#e8c97a', ice:'#a8c5da', callGreen:'#3dd68c', putRed:'#f06060',
+  white:'#f0efe8', gray:'#8a9bb0', border:'rgba(201,168,76,0.15)' };
+
+// Visibility state for each chart's lines
+const vis = {
+  call:  { payoff:true, profit:true, spot:true },
+  sc:    { payoff:true, profit:true, spot:true },
+  put:   { payoff:true, profit:true, spot:true },
+  sp:    { payoff:true, profit:true, spot:true }
+};
+
+function toggleLine(chart, line) {
+  vis[chart][line] = !vis[chart][line];
+  const btn = document.getElementById(`${chart}-tog-${line}`);
+  btn.classList.toggle('on', vis[chart][line]);
+  const updaters = { call: updateCall, sc: updateSC, put: updatePut, sp: updateSP };
+  updaters[chart]();
+}
+
+function drawChart(canvasId, prices, datasets, currentS, yLabel) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const w = rect.width - 40, h = 280;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const PAD = { top: 20, right: 20, bottom: 40, left: 64 };
+  const cw = w - PAD.left - PAD.right;
+  const ch = h - PAD.top - PAD.bottom;
+
+  // Y range
+  let allY = datasets.flatMap(d => d.data.filter(v => isFinite(v)));
+  let yMin = Math.min(...allY), yMax = Math.max(...allY);
+  const yPad = Math.max((yMax - yMin) * 0.15, 10);
+  yMin -= yPad; yMax += yPad;
+
+  const xScale = p => PAD.left + ((p - prices[0]) / (prices[prices.length-1] - prices[0])) * cw;
+  const yScale = v => PAD.top + ch - ((v - yMin) / (yMax - yMin)) * ch;
+
+  // Background
+  ctx.fillStyle = CSS.navyMid;
+  ctx.fillRect(0, 0, w, h);
+
+  // Zero line
+  const z0 = yScale(0);
+  ctx.strokeStyle = 'rgba(201,168,76,0.25)'; ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(PAD.left, z0); ctx.lineTo(PAD.left + cw, z0); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Grid lines Y
+  const steps = 5;
+  for (let i = 0; i <= steps; i++) {
+    const v = yMin + (yMax - yMin) * i / steps;
+    const y = yScale(v);
+    ctx.strokeStyle = 'rgba(201,168,76,0.07)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cw, y); ctx.stroke();
+    ctx.fillStyle = CSS.gray; ctx.font = '10px DM Mono, monospace';
+    ctx.textAlign = 'right'; ctx.fillText(fmt(v), PAD.left - 8, y + 4);
+  }
+
+  // Grid lines X
+  const xSteps = 6;
+  for (let i = 0; i <= xSteps; i++) {
+    const p = prices[0] + (prices[prices.length-1] - prices[0]) * i / xSteps;
+    const x = xScale(p);
+    ctx.strokeStyle = 'rgba(201,168,76,0.07)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, PAD.top); ctx.lineTo(x, PAD.top + ch); ctx.stroke();
+    ctx.fillStyle = CSS.gray; ctx.font = '10px DM Mono, monospace';
+    ctx.textAlign = 'center'; ctx.fillText('$'+Math.round(p), x, PAD.top + ch + 18);
+  }
+
+  // Axes
+  ctx.strokeStyle = CSS.border; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + ch);
+  ctx.lineTo(PAD.left + cw, PAD.top + ch); ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle = CSS.gray; ctx.font = '10px DM Sans, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Stock Price at Expiry (S_T)', PAD.left + cw/2, h - 4);
+  ctx.save(); ctx.translate(14, PAD.top + ch/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('P&L ($)', 0, 0); ctx.restore();
+
+  // Current S vertical line
+  if (currentS && currentS >= prices[0] && currentS <= prices[prices.length-1]) {
+    const xS = xScale(currentS);
+    ctx.strokeStyle = 'rgba(168,197,218,0.4)'; ctx.lineWidth = 1.5; ctx.setLineDash([5,5]);
+    ctx.beginPath(); ctx.moveTo(xS, PAD.top); ctx.lineTo(xS, PAD.top + ch); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = CSS.ice; ctx.font = '9px DM Mono, monospace';
+    ctx.textAlign = 'center'; ctx.fillText('S = $'+currentS, xS, PAD.top - 4);
+  }
+
+  // Dataset lines
+  datasets.forEach(ds => {
+    if (!ds.visible) return;
+    ctx.strokeStyle = ds.color; ctx.lineWidth = ds.width || 2.5;
+    ctx.setLineDash(ds.dash || []);
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ds.data.forEach((v, i) => {
+      const x = xScale(prices[i]), y = yScale(v);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Breakeven dot
+    if (ds.breakeven !== undefined) {
+      const beX = xScale(ds.breakeven);
+      const beY = yScale(0);
+      ctx.beginPath();
+      ctx.arc(beX, beY, 4, 0, Math.PI*2);
+      ctx.fillStyle = ds.color; ctx.fill();
+      ctx.strokeStyle = CSS.navyMid; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+  });
+
+  // Profit area fill
+  datasets.forEach(ds => {
+    if (!ds.visible || !ds.fill) return;
+    ctx.save();
+    const gradPos = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + ch);
+    gradPos.addColorStop(0, ds.fill + '30');
+    gradPos.addColorStop(1, ds.fill + '00');
+    ctx.fillStyle = gradPos;
+    ctx.beginPath();
+    const z = yScale(0);
+    let drawing = false;
+    ds.data.forEach((v, i) => {
+      const x = xScale(prices[i]), y = yScale(v);
+      if (v > 0) {
+        if (!drawing) { ctx.moveTo(x, z); drawing = true; }
+        ctx.lineTo(x, y);
+      } else if (drawing) {
+        ctx.lineTo(x, z); drawing = false;
+      }
+    });
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  });
+}
+
+function fmt(v) {
+  if (v >= 0) return '$' + v.toFixed(0);
+  return '−$' + Math.abs(v).toFixed(0);
+}
+function fmtFull(v) {
+  if (v >= 0) return '+$' + v.toFixed(0);
+  return '−$' + Math.abs(v).toFixed(0);
+}
+function moneyness(s, k) {
+  if (Math.abs(s-k) < 1) return 'ATM';
+  return s > k ? 'ITM' : 'OTM';
+}
+
+// ─────────────────────────────────────
+// LONG CALL
+// ─────────────────────────────────────
+function updateCall() {
+  const S = +document.getElementById('call-s').value;
+  const K = +document.getElementById('call-k').value;
+  const c = +document.getElementById('call-p').value;
+  const n = +document.getElementById('call-n').value;
+  document.getElementById('call-s-val').textContent = '$'+S;
+  document.getElementById('call-k-val').textContent = '$'+K;
+  document.getElementById('call-p-val').textContent = '$'+c.toFixed(2);
+  document.getElementById('call-n-val').textContent = n;
+
+  const be = K + c;
+  document.getElementById('call-be').textContent = '$'+be.toFixed(2);
+  document.getElementById('call-ml').textContent = '−$'+(c*100*n).toFixed(0);
+  const pnl = (Math.max(S - K, 0) - c) * 100 * n;
+  const pnlEl = document.getElementById('call-pnl');
+  pnlEl.textContent = fmtFull(pnl);
+  pnlEl.closest('.stat-box').className = 'stat-box ' + (pnl >= 0 ? 'positive' : 'negative');
+  document.getElementById('call-mon').textContent = moneyness(S, K) + (S > K ? ' ✓' : '');
+
+  const prices = Array.from({length:160}, (_,i) => 50 + i);
+  const payoff = prices.map(p => Math.max(p - K, 0) * 100 * n);
+  const profit = prices.map(p => (Math.max(p - K, 0) - c) * 100 * n);
+
+  drawChart('call-chart', prices, [
+    { data: payoff, color: CSS.callGreen, width: 2, visible: vis.call.payoff },
+    { data: profit, color: CSS.gold, width: 2.5, visible: vis.call.profit, fill: CSS.gold, breakeven: be },
+  ], vis.call.spot ? S : null);
+}
+
+// ─────────────────────────────────────
+// SHORT CALL
+// ─────────────────────────────────────
+function updateSC() {
+  const S = +document.getElementById('sc-s').value;
+  const K = +document.getElementById('sc-k').value;
+  const c = +document.getElementById('sc-p').value;
+  const n = +document.getElementById('sc-n').value;
+  document.getElementById('sc-s-val').textContent = '$'+S;
+  document.getElementById('sc-k-val').textContent = '$'+K;
+  document.getElementById('sc-p-val').textContent = '$'+c.toFixed(2);
+  document.getElementById('sc-n-val').textContent = n;
+
+  const be = K + c;
+  document.getElementById('sc-be').textContent = '$'+be.toFixed(2);
+  document.getElementById('sc-mg').textContent = '$'+(c*100*n).toFixed(0);
+  const pnl = (c - Math.max(S - K, 0)) * 100 * n;
+  const pnlEl = document.getElementById('sc-pnl');
+  pnlEl.textContent = fmtFull(pnl);
+  pnlEl.closest('.stat-box').className = 'stat-box ' + (pnl >= 0 ? 'positive' : 'negative');
+  document.getElementById('sc-mon').textContent = moneyness(S, K);
+
+  const prices = Array.from({length:160}, (_,i) => 50 + i);
+  const payoff = prices.map(p => -Math.max(p - K, 0) * 100 * n);
+  const profit = prices.map(p => (c - Math.max(p - K, 0)) * 100 * n);
+
+  drawChart('sc-chart', prices, [
+    { data: payoff, color: CSS.putRed, width: 2, visible: vis.sc.payoff },
+    { data: profit, color: CSS.gold, width: 2.5, visible: vis.sc.profit, fill: CSS.gold, breakeven: be },
+  ], vis.sc.spot ? S : null);
+}
+
+// ─────────────────────────────────────
+// LONG PUT
+// ─────────────────────────────────────
+function updatePut() {
+  const S = +document.getElementById('put-s').value;
+  const K = +document.getElementById('put-k').value;
+  const p = +document.getElementById('put-p').value;
+  const n = +document.getElementById('put-n').value;
+  document.getElementById('put-s-val').textContent = '$'+S;
+  document.getElementById('put-k-val').textContent = '$'+K;
+  document.getElementById('put-p-val').textContent = '$'+p.toFixed(2);
+  document.getElementById('put-n-val').textContent = n;
+
+  const be = K - p;
+  document.getElementById('put-be').textContent = '$'+be.toFixed(2);
+  document.getElementById('put-ml').textContent = '−$'+(p*100*n).toFixed(0);
+  const pnl = (Math.max(K - S, 0) - p) * 100 * n;
+  const pnlEl = document.getElementById('put-pnl');
+  pnlEl.textContent = fmtFull(pnl);
+  pnlEl.closest('.stat-box').className = 'stat-box ' + (pnl >= 0 ? 'positive' : 'negative');
+  document.getElementById('put-mon').textContent = moneyness(S, K) === 'ITM' ? 'OTM' : moneyness(S, K) === 'OTM' ? 'ITM' : 'ATM';
+
+  const prices = Array.from({length:160}, (_,i) => 50 + i);
+  const payoff = prices.map(pr => Math.max(K - pr, 0) * 100 * n);
+  const profit = prices.map(pr => (Math.max(K - pr, 0) - p) * 100 * n);
+
+  drawChart('put-chart', prices, [
+    { data: payoff, color: CSS.putRed, width: 2, visible: vis.put.payoff },
+    { data: profit, color: CSS.gold, width: 2.5, visible: vis.put.profit, fill: CSS.gold, breakeven: be },
+  ], vis.put.spot ? S : null);
+}
+
+// ─────────────────────────────────────
+// SHORT PUT
+// ─────────────────────────────────────
+function updateSP() {
+  const S = +document.getElementById('sp-s').value;
+  const K = +document.getElementById('sp-k').value;
+  const p = +document.getElementById('sp-p').value;
+  const n = +document.getElementById('sp-n').value;
+  document.getElementById('sp-s-val').textContent = '$'+S;
+  document.getElementById('sp-k-val').textContent = '$'+K;
+  document.getElementById('sp-p-val').textContent = '$'+p.toFixed(2);
+  document.getElementById('sp-n-val').textContent = n;
+
+  const be = K - p;
+  document.getElementById('sp-be').textContent = '$'+be.toFixed(2);
+  document.getElementById('sp-mg').textContent = '$'+(p*100*n).toFixed(0);
+  const pnl = (p - Math.max(K - S, 0)) * 100 * n;
+  const pnlEl = document.getElementById('sp-pnl');
+  pnlEl.textContent = fmtFull(pnl);
+  pnlEl.closest('.stat-box').className = 'stat-box ' + (pnl >= 0 ? 'positive' : 'negative');
+  document.getElementById('sp-mon').textContent = S >= K ? 'OTM' : 'ITM';
+
+  const prices = Array.from({length:160}, (_,i) => 50 + i);
+  const payoff = prices.map(pr => -Math.max(K - pr, 0) * 100 * n);
+  const profit = prices.map(pr => (p - Math.max(K - pr, 0)) * 100 * n);
+
+  drawChart('sp-chart', prices, [
+    { data: payoff, color: CSS.callGreen, width: 2, visible: vis.sp.payoff },
+    { data: profit, color: CSS.gold, width: 2.5, visible: vis.sp.profit, fill: CSS.gold, breakeven: be },
+  ], vis.sp.spot ? S : null);
+}
+
+// ─────────────────────────────────────
+// TABS
+// ─────────────────────────────────────
+function switchTab(id) {
+  const map = { call:'call', 'call-short':'call-short', put:'put', 'put-short':'put-short' };
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  const btns = document.querySelectorAll('.tab-btn');
+  const labels = ['call','call-short','put','put-short'];
+  btns[labels.indexOf(id)].classList.add('active');
+  setTimeout(() => { updateCall(); updateSC(); updatePut(); updateSP(); }, 50);
+}
+
+// ─────────────────────────────────────
+// SCENARIOS
+// ─────────────────────────────────────
+const scenarios = [
+  {
+    label: 'Bullish Bet',
+    title: 'AAPL Earnings Play',
+    icon: '🍎',
+    body: `Apple reports earnings in two weeks. You believe the stock ($175 currently) will beat estimates and pop. Instead of buying 100 shares for $17,500, you buy one call option at the $180 strike for a $4.50 premium — risking only $450 while controlling 100 shares.`,
+    rows: [
+      { scenario: 'AAPL stays at $175', payoff: '$0', cost: '$450', net: '−$450', cls: 'td-neg' },
+      { scenario: 'AAPL rises to $180 (ATM)', payoff: '$0', cost: '$450', net: '−$450', cls: 'td-neg' },
+      { scenario: 'AAPL rises to $185 (+5.7%)', payoff: '$500', cost: '$450', net: '+$50', cls: 'td-pos' },
+      { scenario: 'AAPL rises to $195 (+11.4%)', payoff: '$1,500', cost: '$450', net: '+$1,050', cls: 'td-pos' },
+      { scenario: 'AAPL falls below $175', payoff: '$0', cost: '$450', net: '−$450', cls: 'td-neg' },
+    ],
+    takeaway: 'Key takeaway: Your breakeven is $184.50. A 5.4% move turns a $450 bet into a $50 gain — but 11.4% up triples your money. You can never lose more than $450.'
+  },
+  {
+    label: 'Downside Protection',
+    title: 'Protective Put on MSFT',
+    icon: '🛡️',
+    body: `You own 100 shares of Microsoft at $380/share ($38,000 total). You're worried about a market pullback before earnings next month. You buy a $370 put for $6.00 ($600 total) as insurance.`,
+    rows: [
+      { scenario: 'MSFT rises to $400 (+5.3%)', payoff: 'Stock: +$2,000', cost: '$600 (expired)', net: '+$1,400', cls: 'td-pos' },
+      { scenario: 'MSFT stays at $380', payoff: 'Stock: $0', cost: '$600 (expired)', net: '−$600', cls: 'td-neg' },
+      { scenario: 'MSFT falls to $370 (−2.6%)', payoff: 'Stock: −$1,000, Put: $0', cost: '$600', net: '−$1,600', cls: 'td-neg' },
+      { scenario: 'MSFT falls to $350 (−7.9%)', payoff: 'Stock: −$3,000, Put: +$2,000', cost: '$600', net: '−$1,600', cls: 'td-neg' },
+      { scenario: 'MSFT crashes to $300 (−21%)', payoff: 'Stock: −$8,000, Put: +$7,000', cost: '$600', net: '−$1,600', cls: 'td-neg' },
+    ],
+    takeaway: 'Key takeaway: Your max loss is capped at $1,600 no matter how far MSFT falls. The put acts like an insurance deductible — you pay $600 for protection below $370.'
+  },
+  {
+    label: 'Income Generation',
+    title: 'Covered Call on SPY',
+    icon: '💰',
+    body: `You own 100 shares of SPY at $520. You expect the market to trade sideways for the next month. You sell a $530 call expiring in 30 days and collect a $3.50 premium ($350 income).`,
+    rows: [
+      { scenario: 'SPY falls to $500 (−3.8%)', payoff: 'Stock: −$2,000', cost: '+$350 premium', net: '−$1,650', cls: 'td-neg' },
+      { scenario: 'SPY stays at $520', payoff: 'Stock: $0', cost: '+$350 premium', net: '+$350', cls: 'td-pos' },
+      { scenario: 'SPY rises to $525', payoff: 'Stock: +$500', cost: '+$350 premium', net: '+$850', cls: 'td-pos' },
+      { scenario: 'SPY rises to $530 (called away)', payoff: 'Stock: +$1,000', cost: '+$350 premium', net: '+$1,350', cls: 'td-pos' },
+      { scenario: 'SPY surges to $545 (+4.8%)', payoff: 'Stock sold at $530 (+$1,000)', cost: '+$350 premium', net: '+$1,350', cls: 'td-pos' },
+    ],
+    takeaway: 'Key takeaway: You cap your upside at $1,350 if SPY is called away. But in flat or mildly rising markets, the $350 premium boosts your return. Classic income strategy.'
+  }
+];
+
+let activeScenario = null;
+
+function showScenario(idx) {
+  document.querySelectorAll('.scenario-card').forEach((c, i) => c.classList.toggle('active', i === idx));
+  const sc = scenarios[idx];
+  const detail = document.getElementById('scenario-detail');
+
+  const rows = sc.rows.map(r => `
+    <tr>
+      <td>${r.scenario}</td>
+      <td>${r.payoff}</td>
+      <td>${r.cost}</td>
+      <td class="${r.cls}">${r.net}</td>
+    </tr>`).join('');
+
+  detail.innerHTML = `
+    <div>
+      <div class="sd-label">${sc.icon} ${sc.label}</div>
+      <div class="sd-title">${sc.title}</div>
+      <div class="sd-body">${sc.body}</div>
+      <div class="sd-body" style="font-size:13px;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:8px;padding:14px 18px;color:var(--gold-pale);">
+        ${sc.takeaway}
+      </div>
+    </div>
+    <div>
+      <table class="sd-payoff-table">
+        <thead><tr><th>Scenario</th><th>Option Payoff</th><th>Cost / Credit</th><th>Net P&L</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+  detail.classList.add('active');
+  detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ─────────────────────────────────────
+// INIT + RESIZE
+// ─────────────────────────────────────
+window.addEventListener('load', () => {
+  updateCall(); updateSC(); updatePut(); updateSP();
+});
+window.addEventListener('resize', () => {
+  updateCall(); updateSC(); updatePut(); updateSP();
+});
+</script>
+</body>
+</html>
