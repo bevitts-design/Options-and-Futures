@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Futures &amp; Forward Markets — Module 03</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:       #0d1b2a;
+    --navy-mid:   #162032;
+    --navy-light: #1e2e42;
+    --gold:       #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-pale:  #f5e8c0;
+    --ice:        #a8c5da;
+    --ice-pale:   #d6e8f2;
+    --white:      #f0efe8;
+    --gray:       #8a9bb0;
+    --border:     rgba(201,168,76,0.2);
+    --border-dim: rgba(201,168,76,0.09);
+    --glow-gold:  0 0 28px rgba(201,168,76,0.18);
+    --green:      #3dd68c;
+    --red:        #f06060;
+    --amber:      #f0a040;
+    --teal:       #3ecfcf;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(201,168,76,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 60% at 80% 90%, rgba(168,197,218,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+
+  /* ── HEADER ── */
+  header { border-bottom: 1px solid var(--border); padding: 28px 0 24px; }
+  header .wrap { display: flex; align-items: center; gap: 16px; }
+  .header-eyebrow {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); opacity: 0.8;
+  }
+  .header-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(20px, 2.5vw, 28px);
+    letter-spacing: -0.4px;
+  }
+  .header-title em { color: var(--gold); font-style: italic; }
+  .header-sep { width: 1px; height: 20px; background: var(--border); }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .header-badge {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    background: rgba(201,168,76,0.1); border: 1px solid var(--border);
+    color: var(--gold); padding: 5px 10px; border-radius: 4px;
+  }
+  .back-link {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--gray); text-decoration: none; padding: 5px 10px;
+    border-radius: 4px; border: 1px solid var(--border-dim);
+    transition: all 0.2s;
+  }
+  .back-link:hover { color: var(--gold); border-color: var(--border); }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 56px 0 48px; border-bottom: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  .hero-watermark {
+    position: absolute; right: -10px; bottom: -30px;
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(90px, 16vw, 200px); font-style: italic;
+    color: rgba(201,168,76,0.035); line-height: 1;
+    pointer-events: none; user-select: none; letter-spacing: -4px;
+  }
+  .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+  .hero-kicker {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 18px;
+    display: flex; align-items: center; gap: 10px;
+    opacity: 0; animation: fadeUp 0.5s 0.1s ease forwards;
+  }
+  .hero-kicker::before { content: ''; display: block; width: 32px; height: 1px; background: var(--gold); }
+  .hero h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 4.5vw, 56px);
+    line-height: 1.05; letter-spacing: -1.5px; margin-bottom: 18px;
+    opacity: 0; animation: fadeUp 0.55s 0.18s ease forwards;
+  }
+  .hero h2 .accent { color: var(--gold); }
+  .hero-sub {
+    font-size: 15px; line-height: 1.75; color: var(--ice-pale);
+    max-width: 440px;
+    opacity: 0; animation: fadeUp 0.55s 0.26s ease forwards;
+  }
+  /* Live market ticker cards */
+  .live-ticker {
+    display: flex; flex-direction: column; gap: 12px;
+    opacity: 0; animation: fadeUp 0.55s 0.34s ease forwards;
+  }
+  .ticker-label {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+  }
+  .ticker-label::before { content: '●'; color: var(--red); font-size: 8px; animation: blink 1.4s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  .ticker-card {
+    background: var(--navy-mid); border: 1px solid var(--border-dim);
+    border-radius: 10px; padding: 16px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; transition: border-color 0.2s;
+  }
+  .ticker-card:hover { border-color: var(--border); }
+  .ticker-card.featured { border-color: rgba(201,168,76,0.3); }
+  .tc-left { display: flex; align-items: center; gap: 12px; }
+  .tc-icon { font-size: 22px; }
+  .tc-name { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--white); font-weight: 500; }
+  .tc-sub  { font-size: 10px; color: var(--gray); margin-top: 2px; }
+  .tc-right { text-align: right; }
+  .tc-price { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--white); }
+  .tc-change { font-family: 'DM Mono', monospace; font-size: 10px; margin-top: 2px; }
+  .tc-change.up { color: var(--green); }
+  .tc-change.down { color: var(--red); }
+  .tc-context { font-size: 10px; color: var(--gray); margin-top: 4px; max-width: 120px; text-align: right; line-height: 1.4; }
+
+  /* ── SECTION COMMON ── */
+  .section { padding: 60px 0; border-bottom: 1px solid var(--border-dim); }
+  .section-eyebrow {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); opacity: 0.8; margin-bottom: 10px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(26px, 3.5vw, 40px);
+    letter-spacing: -0.8px; margin-bottom: 12px; line-height: 1.15;
+  }
+  .section-sub { font-size: 14px; color: var(--gray); max-width: 520px; line-height: 1.7; }
+  .rule { height: 1px; background: var(--border-dim); margin: 24px 0; }
+
+  /* ── CONCEPTS TABS ── */
+  .tab-nav {
+    display: flex; border: 1px solid var(--border); border-radius: 10px;
+    overflow: hidden; width: fit-content; margin-bottom: 36px;
+  }
+  .tab-btn {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 11px 22px; background: transparent;
+    border: none; border-right: 1px solid var(--border);
+    color: var(--gray); cursor: pointer; transition: all 0.2s;
+  }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn.active { background: var(--gold); color: var(--navy); font-weight: 600; }
+  .tab-btn:not(.active):hover { background: rgba(201,168,76,0.08); color: var(--white); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* ── CONCEPT TWO-COL LAYOUT ── */
+  .concept-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;
+  }
+  .concept-explainer {
+    background: var(--navy-mid); border: 1px solid var(--border-dim);
+    border-radius: 14px; padding: 28px;
+  }
+  .ce-label {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 14px;
+  }
+  .ce-title { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 12px; }
+  .ce-body { font-size: 13px; color: var(--ice-pale); line-height: 1.75; margin-bottom: 18px; }
+  .ce-formula {
+    font-family: 'DM Mono', monospace; font-size: 12px; color: var(--gold-light);
+    background: var(--navy); border: 1px solid var(--border-dim);
+    border-radius: 8px; padding: 14px 18px; line-height: 1.9;
+    margin-bottom: 16px;
+  }
+  .ce-formula span { color: var(--gray); font-size: 10px; }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .compare-table th {
+    font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--gold); text-align: left;
+    padding: 9px 14px; border-bottom: 1px solid var(--border-dim);
+    background: var(--navy);
+  }
+  .compare-table td {
+    padding: 10px 14px; border-bottom: 1px solid var(--border-dim);
+    color: var(--ice-pale); line-height: 1.5;
+  }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(201,168,76,0.03); }
+  .compare-table td:first-child { color: var(--white); font-weight: 500; font-size: 11px; }
+
+  /* ── MECHANICS CARDS ── */
+  .mechanics-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 36px; }
+  .mech-card {
+    background: var(--navy-mid); border: 1px solid var(--border-dim);
+    border-radius: 12px; padding: 22px;
+    transition: all 0.25s; cursor: default;
+  }
+  .mech-card:hover { border-color: var(--gold); transform: translateY(-3px); box-shadow: var(--glow-gold); }
+  .mech-num {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 12px;
+  }
+  .mech-icon { font-size: 28px; margin-bottom: 10px; display: block; }
+  .mech-title { font-family: 'DM Serif Display', serif; font-size: 17px; margin-bottom: 8px; }
+  .mech-body { font-size: 12px; color: var(--gray); line-height: 1.65; }
+
+  /* ── CURVE VISUALIZER ── */
+  .curve-section { padding: 60px 0; border-bottom: 1px solid var(--border-dim); }
+  .curve-layout { display: grid; grid-template-columns: 340px 1fr; gap: 28px; align-items: start; }
+  .curve-controls {
+    background: var(--navy-mid); border: 1px solid var(--border-dim);
+    border-radius: 14px; padding: 26px; position: sticky; top: 24px;
+  }
+  .panel-title {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 22px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border-dim);
+  }
+  .ctrl-group { margin-bottom: 20px; }
+  .ctrl-label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; font-weight: 500; color: var(--ice-pale);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+  }
+  .ctrl-val { font-family: 'DM Mono', monospace; color: var(--gold); font-size: 13px; }
+  input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 2px;
+    background: var(--navy-light); border-radius: 2px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%;
+    background: var(--gold); cursor: pointer;
+    box-shadow: 0 0 6px rgba(201,168,76,0.5); transition: transform 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+  .curve-mode-btns { display: flex; gap: 8px; margin-bottom: 18px; }
+  .mode-btn {
+    flex: 1; font-family: 'DM Mono', monospace; font-size: 9px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 8px; border-radius: 7px;
+    border: 1px solid var(--border-dim); background: transparent;
+    color: var(--gray); cursor: pointer; transition: all 0.2s;
+  }
+  .mode-btn.active.contango { background: rgba(240,160,64,0.15); border-color: var(--amber); color: var(--amber); }
+  .mode-btn.active.backwardation { background: rgba(62,207,142,0.12); border-color: var(--green); color: var(--green); }
+  .mode-btn:not(.active):hover { background: rgba(201,168,76,0.06); color: var(--white); }
+
+  .stats-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .stat-box {
+    background: var(--navy-light); border: 1px solid var(--border-dim);
+    border-radius: 8px; padding: 12px 14px; text-align: center;
+  }
+  .stat-box .sl { font-family: 'DM Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gray); margin-bottom: 4px; }
+  .stat-box .sv { font-family: 'DM Serif Display', serif; font-size: 18px; }
+  .sv.gold { color: var(--gold); }
+  .sv.green { color: var(--green); }
+  .sv.red { color: var(--red); }
+  .sv.amber { color: var(--amber); }
+
+  .curve-chart-area {
+    background: var(--navy-mid); border: 1px solid var(--border-dim);
+    border-radius: 14px; overflow: hidden;
+  }
+  .chart-header {
+    padding: 18px 26px; border-bottom: 1px solid var(--border-dim);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .chart-header h3 { font-family: 'DM Serif Display', serif; font-size: 18px; }
+  .curve-status {
+    margin-left: auto; font-family: 'DM Mono', monospace; font-size: 10px;
+    padding: 4px 10px; border-radius: 4px; letter-spacing: 0.1em; text-transform: uppercase;
+    transition: all 0.3s;
+  }
+  .curve-status.contango    { background: rgba(240,160,64,0.15); border: 1px solid rgba(240,160,64,0.35); color: var(--amber); }
+  .curve-status.backwardation { background: rgba(62,207,142,0.12); border: 1px solid rgba(62,207,142,0.3); color: var(--green); }
+  .canvas-wrap { padding: 14px 18px 10px; }
+  canvas { display: block; }
+
+  .curve-insight {
+    padding: 16px 26px 18px;
+    border-top: 1px solid var(--border-dim);
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;
+  }
+  .ci-box { background: var(--navy-light); border-radius: 8px; padding: 12px 14px; border: 1px solid var(--border-dim); }
+  .ci-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .ci-text { font-size: 11px; color: var(--ice-pale); line-height: 1.55; }
+  .ci-text strong { color: var(--white); }
+
+  /* ── OIL MARKET CASE STUDY ── */
+  .case-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-top: 36px; }
+  .case-card {
+    background: var(--navy-mid); border: 1px solid var(--border-dim);
+    border-radius: 12px; overflow: hidden; cursor: pointer;
+    transition: all 0.25s;
+  }
+  .case-card:hover { border-color: var(--gold); transform: translateY(-4px); box-shadow: var(--glow-gold); }
+  .case-card.active { border-color: var(--gold); }
+  .case-top { padding: 18px 20px; border-bottom: 1px solid var(--border-dim); }
+  .case-year { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .case-title { font-family: 'DM Serif Display', serif; font-size: 17px; }
+  .case-icon { font-size: 28px; float: right; margin-top: -4px; }
+  .case-stats { padding: 14px 20px; }
+  .cs-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-dim); font-size: 11px; }
+  .cs-row:last-child { border-bottom: none; }
+  .cs-key { color: var(--gray); }
+  .cs-val { font-family: 'DM Mono', monospace; font-weight: 500; }
+  .cs-val.red { color: var(--red); }
+  .cs-val.green { color: var(--green); }
+  .cs-val.amber { color: var(--amber); }
+  .cs-val.gold { color: var(--gold); }
+
+  .case-detail {
+    background: var(--navy-mid); border: 1px solid var(--gold);
+    border-radius: 14px; margin-top: 20px; overflow: hidden;
+    display: none; animation: fadeUp 0.3s ease;
+  }
+  .case-detail.open { display: grid; grid-template-columns: 1fr 1fr; }
+  .cd-left { padding: 28px 32px; border-right: 1px solid var(--border-dim); }
+  .cd-right { padding: 28px 32px; }
+  .cd-eyebrow { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+  .cd-title { font-family: 'DM Serif Display', serif; font-size: 24px; margin-bottom: 14px; }
+  .cd-body { font-size: 13px; color: var(--ice-pale); line-height: 1.75; margin-bottom: 16px; }
+  .cd-callout {
+    background: rgba(201,168,76,0.06); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 18px;
+    font-size: 12px; color: var(--gold-pale); line-height: 1.6;
+    margin-top: 14px;
+  }
+  .payoff-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .payoff-table th {
+    font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--gold); text-align: left;
+    padding: 8px 12px; border-bottom: 1px solid var(--border-dim);
+  }
+  .payoff-table td {
+    padding: 10px 12px; border-bottom: 1px solid rgba(201,168,76,0.07);
+    color: var(--ice-pale); font-family: 'DM Mono', monospace; font-size: 11px;
+  }
+  .payoff-table tr:last-child td { border-bottom: none; }
+  .td-pos { color: var(--green); }
+  .td-neg { color: var(--red); }
+  .td-neu { color: var(--gray); }
+
+  /* ── HEDGER vs SPECULATOR ── */
+  .actors-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 36px; }
+  .actor-card {
+    background: var(--navy-mid); border: 1px solid var(--border-dim);
+    border-radius: 14px; overflow: hidden;
+  }
+  .actor-header {
+    padding: 18px 24px; border-bottom: 1px solid var(--border-dim);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .actor-icon { font-size: 30px; }
+  .actor-name { font-family: 'DM Serif Display', serif; font-size: 20px; }
+  .actor-tag { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 9px; border-radius: 4px; margin-top: 3px; }
+  .tag-hedger    { background: rgba(168,197,218,0.12); color: var(--ice); border: 1px solid rgba(168,197,218,0.25); }
+  .tag-speculator{ background: rgba(240,160,64,0.1); color: var(--amber); border: 1px solid rgba(240,160,64,0.25); }
+  .actor-body { padding: 22px 24px; }
+  .actor-goal { font-size: 13px; color: var(--ice-pale); line-height: 1.7; margin-bottom: 18px; }
+  .actor-example {
+    background: var(--navy); border-left: 3px solid var(--gold);
+    padding: 14px 18px; border-radius: 0 8px 8px 0;
+    font-size: 12px; color: var(--ice-pale); line-height: 1.65;
+  }
+  .actor-example strong { color: var(--gold); font-weight: 500; }
+
+  /* ── MARGIN SIMULATOR ── */
+  .margin-layout { display: grid; grid-template-columns: 300px 1fr; gap: 28px; align-items: start; margin-top: 36px; }
+  .margin-panel {
+    background: var(--navy-mid); border: 1px solid var(--border-dim);
+    border-radius: 14px; padding: 26px; position: sticky; top: 24px;
+  }
+  .margin-table-wrap {
+    background: var(--navy-mid); border: 1px solid var(--border-dim);
+    border-radius: 14px; overflow: hidden;
+  }
+  .mt-header { padding: 18px 24px; border-bottom: 1px solid var(--border-dim); display: flex; align-items: center; gap: 12px; }
+  .mt-title { font-family: 'DM Serif Display', serif; font-size: 18px; }
+  .mt-badge { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; background: rgba(62,207,142,0.1); border: 1px solid rgba(62,207,142,0.25); color: var(--green); padding: 4px 9px; border-radius: 4px; }
+  .margin-days { padding: 12px 0; }
+  .md-row {
+    display: grid; grid-template-columns: 60px 80px 1fr 80px 80px;
+    gap: 0; padding: 10px 24px; border-bottom: 1px solid var(--border-dim);
+    font-size: 12px; align-items: center;
+  }
+  .md-row:last-child { border-bottom: none; }
+  .md-row.header {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--gold); background: var(--navy);
+    padding: 10px 24px;
+  }
+  .md-day { color: var(--gray); font-family: 'DM Mono', monospace; font-size: 11px; }
+  .md-price { font-family: 'DM Mono', monospace; }
+  .md-change { font-family: 'DM Mono', monospace; font-size: 11px; }
+  .md-pnl { font-family: 'DM Mono', monospace; font-size: 11px; text-align: right; }
+  .md-balance { font-family: 'DM Mono', monospace; font-size: 11px; text-align: right; }
+  .mc-call { background: rgba(240,96,96,0.08); }
+  .margin-summary { padding: 16px 24px; border-top: 1px solid var(--border-dim); display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; }
+  .ms-cell { padding: 12px 16px; text-align: center; }
+  .ms-val { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 3px; }
+  .ms-lbl { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); }
+
+  /* ── QUIZ ── */
+  .quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 36px; }
+  .quiz-card {
+    background: var(--navy-mid); border: 1px solid var(--border-dim);
+    border-radius: 12px; padding: 22px;
+  }
+  .quiz-q { font-family: 'DM Serif Display', serif; font-size: 16px; line-height: 1.4; margin-bottom: 16px; font-weight: 600; }
+  .quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt {
+    padding: 9px 13px; border-radius: 7px;
+    border: 1px solid var(--border-dim);
+    background: var(--navy-light); font-size: 12px; color: var(--ice-pale);
+    cursor: pointer; transition: all 0.2s; line-height: 1.4;
+  }
+  .quiz-opt:hover { border-color: var(--gold); }
+  .quiz-opt.correct { border-color: var(--green); background: rgba(61,214,140,0.1); color: var(--green); }
+  .quiz-opt.wrong   { border-color: var(--red);   background: rgba(240,96,96,0.08);  color: var(--red); }
+  .quiz-opt.dimmed  { opacity: 0.35; }
+  .quiz-feedback {
+    margin-top: 10px; font-size: 12px; color: var(--ice-pale); line-height: 1.6;
+    display: none; padding: 10px 13px; border-radius: 7px;
+    background: var(--navy); border-left: 3px solid var(--gold);
+  }
+  .quiz-feedback.show { display: block; }
+
+  /* ── GLOSSARY ── */
+  .gloss-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 32px; }
+  .gloss-item { border-left: 2px solid var(--gold); padding: 13px 18px; background: rgba(201,168,76,0.03); }
+  .g-term { font-family: 'DM Serif Display', serif; font-size: 16px; margin-bottom: 6px; }
+  .g-def  { font-size: 12px; color: var(--gray); line-height: 1.6; }
+
+  /* ── FOOTER ── */
+  footer { border-top: 1px solid var(--border-dim); padding: 28px 0; }
+  footer .wrap { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+  .foot-left { display: flex; align-items: center; gap: 14px; }
+  .foot-title { font-family: 'DM Serif Display', serif; font-size: 15px; }
+  .foot-title em { color: var(--gold); font-style: italic; }
+  .foot-sep { width: 1px; height: 14px; background: var(--border); }
+  .foot-note { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--gray); letter-spacing: 0.1em; text-transform: uppercase; }
+  .foot-right { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--gray); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 960px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .concept-grid { grid-template-columns: 1fr; }
+    .curve-layout { grid-template-columns: 1fr; }
+    .curve-controls { position: static; }
+    .case-grid { grid-template-columns: 1fr 1fr; }
+    .actors-grid { grid-template-columns: 1fr; }
+    .margin-layout { grid-template-columns: 1fr; }
+    .margin-panel { position: static; }
+    .mechanics-grid { grid-template-columns: 1fr 1fr; }
+    .gloss-grid { grid-template-columns: 1fr 1fr; }
+    .quiz-grid { grid-template-columns: 1fr; }
+    .case-detail.open { grid-template-columns: 1fr; }
+    .cd-left { border-right: none; border-bottom: 1px solid var(--border-dim); }
+    .curve-insight { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .wrap { padding: 0 16px; }
+    .case-grid { grid-template-columns: 1fr; }
+    .mechanics-grid { grid-template-columns: 1fr; }
+    .gloss-grid { grid-template-columns: 1fr; }
+    .header-sep, .back-link { display: none; }
+    .md-row { grid-template-columns: 50px 70px 1fr 70px; }
+    .md-row .md-balance { display: none; }
+    .margin-summary { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="wrap">
+    <div class="header-eyebrow">Module 03</div>
+    <div class="header-sep"></div>
+    <div class="header-title">Futures &amp; <em>Forward Markets</em></div>
+    <div class="header-right">
+      <a class="back-link" href="index.html">← All Modules</a>
+      <div class="header-badge">Interactive Module</div>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-watermark">Crude</div>
+    <div class="hero-grid">
+      <div>
+        <div class="hero-kicker">Derivatives · Energy Markets · Hedging</div>
+        <h2>Locking in Tomorrow's<br>Price <span class="accent">Today</span></h2>
+        <p class="hero-sub">Futures and forward contracts let buyers and sellers agree on a price now for delivery later. In no market is this more consequential — or more volatile — than crude oil. From OPEC decisions to Strait of Hormuz tensions, you'll see how abstract theory becomes billion-dollar reality.</p>
+      </div>
+      <div class="live-ticker">
+        <div class="ticker-label">Market Snapshot · Spring 2025</div>
+        <div class="ticker-card featured">
+          <div class="tc-left">
+            <div class="tc-icon">🛢️</div>
+            <div>
+              <div class="tc-name">WTI Crude — Front Month</div>
+              <div class="tc-sub">NYMEX · CL1 · 1,000 bbl/contract</div>
+            </div>
+          </div>
+          <div class="tc-right">
+            <div class="tc-price">$63.80</div>
+            <div class="tc-change up">▲ +$0.42 (+0.66%)</div>
+            <div class="tc-context">52-wk range: $54.98 – $113.93</div>
+          </div>
+        </div>
+        <div class="ticker-card">
+          <div class="tc-left">
+            <div class="tc-icon">🌍</div>
+            <div>
+              <div class="tc-name">Brent Crude — Front Month</div>
+              <div class="tc-sub">ICE · BZ1 · Global Benchmark</div>
+            </div>
+          </div>
+          <div class="tc-right">
+            <div class="tc-price">$67.15</div>
+            <div class="tc-change up">▲ +$0.38 (+0.57%)</div>
+            <div class="tc-context">Brent premium: +$3.35/bbl</div>
+          </div>
+        </div>
+        <div class="ticker-card">
+          <div class="tc-left">
+            <div class="tc-icon">📋</div>
+            <div>
+              <div class="tc-name">Curve Structure</div>
+              <div class="tc-sub">Near-term: Backwardation · Long-dated: Contango</div>
+            </div>
+          </div>
+          <div class="tc-right">
+            <div class="tc-price" style="font-size:16px;color:var(--amber)">MIXED</div>
+            <div class="tc-change" style="color:var(--gray)">Rare "smile" curve</div>
+            <div class="tc-context">OPEC+ output hikes shifting structure</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 1: FORWARDS vs FUTURES -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-eyebrow">Core Concepts</div>
+    <h2 class="section-title">Forwards vs. Futures</h2>
+    <p class="section-sub">Both contracts lock in a price for future delivery — but they differ in structure, flexibility, and risk in ways that matter for how they're used.</p>
+
+    <div style="margin-top:36px">
+      <nav class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('fwd')">Forward Contracts</button>
+        <button class="tab-btn" onclick="switchTab('fut')">Futures Contracts</button>
+        <button class="tab-btn" onclick="switchTab('cmp')">Side-by-Side</button>
+      </nav>
+
+      <!-- FORWARDS -->
+      <div class="tab-pane active" id="pane-fwd">
+        <div class="concept-grid">
+          <div class="concept-explainer">
+            <div class="ce-label">Over-the-Counter Instrument</div>
+            <div class="ce-title">Forward Contract</div>
+            <div class="ce-body">
+              A forward is a private, customizable agreement between two parties to buy or sell an asset at a specified price on a specified future date. There is no exchange involved — the deal is negotiated directly.<br><br>
+              An airline might agree today to buy 10 million gallons of jet fuel from a refinery in six months at $2.80/gallon. Both sides eliminate price uncertainty. The airline knows its fuel cost; the refinery locks in revenue.
+            </div>
+            <div class="ce-formula">
+              Forward Price: F₀ = S₀ × e^(rT)<br>
+              <span>S₀ = spot price · r = risk-free rate · T = time to delivery</span><br><br>
+              With storage costs (q): F₀ = S₀ × e^((r+q)T)<br>
+              <span>Crude oil: storage ≈ $0.50–$1.00/bbl/month</span>
+            </div>
+            <div class="ce-body" style="margin-bottom:0">
+              <strong style="color:var(--white)">Key risk:</strong> Counterparty risk — if your counterparty defaults, you have no exchange guarantee. Settlement happens only at maturity.
+            </div>
+          </div>
+          <div>
+            <div class="compare-table" style="background:var(--navy-mid);border:1px solid var(--border-dim);border-radius:12px;overflow:hidden">
+              <table class="compare-table">
+                <thead><tr><th>Feature</th><th>Details</th></tr></thead>
+                <tbody>
+                  <tr><td>Where traded</td><td>Over-the-counter (OTC) — no exchange</td></tr>
+                  <tr><td>Contract terms</td><td>Fully customizable: size, date, settlement</td></tr>
+                  <tr><td>Settlement</td><td>At maturity only — no daily mark-to-market</td></tr>
+                  <tr><td>Counterparty risk</td><td>High — private agreement, no clearinghouse</td></tr>
+                  <tr><td>Liquidity</td><td>Low — difficult to exit early</td></tr>
+                  <tr><td>Typical users</td><td>Corporations, banks, airlines hedging specific needs</td></tr>
+                  <tr><td>Oil example</td><td>Airline locks in jet fuel price with refinery for Q3</td></tr>
+                  <tr><td>Margin required</td><td>No standardized margin — negotiated bilaterally</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FUTURES -->
+      <div class="tab-pane" id="pane-fut">
+        <div class="concept-grid">
+          <div class="concept-explainer">
+            <div class="ce-label">Exchange-Traded Instrument</div>
+            <div class="ce-title">Futures Contract</div>
+            <div class="ce-body">
+              A futures contract is a standardized, exchange-traded agreement to buy or sell a specific quantity of an asset at a set price on a set future date. The exchange (e.g., NYMEX/CME) acts as the central clearinghouse, eliminating counterparty risk.<br><br>
+              A WTI crude futures contract represents exactly <strong style="color:var(--white)">1,000 barrels</strong> of oil. If you buy one June contract at $65/bbl, you're agreeing to take delivery of 1,000 barrels at Cushing, Oklahoma, on the contract's expiration date — unless you close the position first.
+            </div>
+            <div class="ce-formula">
+              Daily P&L = (F_today − F_yesterday) × Contract Size<br>
+              <span>WTI Contract: (Δprice) × 1,000 barrels</span><br><br>
+              Tick size = $0.01/bbl = $10 per contract<br>
+              <span>A $1 move = $1,000 gain or loss per contract</span>
+            </div>
+            <div class="ce-body" style="margin-bottom:0">
+              <strong style="color:var(--white)">Key advantage:</strong> Daily mark-to-market means gains/losses are settled every day. Margin protects the clearinghouse. You can exit by taking an offsetting trade — 95%+ of futures contracts never result in physical delivery.
+            </div>
+          </div>
+          <div>
+            <div style="background:var(--navy-mid);border:1px solid var(--border-dim);border-radius:12px;overflow:hidden">
+              <table class="compare-table">
+                <thead><tr><th>Feature</th><th>Details</th></tr></thead>
+                <tbody>
+                  <tr><td>Where traded</td><td>NYMEX (CME Group), ICE — centralized exchange</td></tr>
+                  <tr><td>Contract terms</td><td>Standardized: 1,000 bbl, specific delivery dates</td></tr>
+                  <tr><td>Settlement</td><td>Daily mark-to-market — gains/losses credited nightly</td></tr>
+                  <tr><td>Counterparty risk</td><td>None — clearinghouse guarantees all trades</td></tr>
+                  <tr><td>Liquidity</td><td>High — millions of contracts trade daily</td></tr>
+                  <tr><td>Typical users</td><td>Hedgers (producers, refiners) + speculators</td></tr>
+                  <tr><td>Oil example</td><td>Pioneer Natural buys WTI Sep contract to lock in revenue</td></tr>
+                  <tr><td>Margin required</td><td>~3–12% of contract value (initial + maintenance)</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDE BY SIDE -->
+      <div class="tab-pane" id="pane-cmp">
+        <div style="background:var(--navy-mid);border:1px solid var(--border-dim);border-radius:14px;overflow:hidden">
+          <table class="compare-table" style="width:100%">
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Forward Contract</th>
+                <th>Futures Contract</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Trading venue</td><td>Over-the-counter (private)</td><td>Centralized exchange (NYMEX, ICE)</td></tr>
+              <tr><td>Standardization</td><td>Fully customizable</td><td>Standardized size &amp; dates</td></tr>
+              <tr><td>Settlement timing</td><td>At maturity only</td><td>Daily mark-to-market</td></tr>
+              <tr><td>Counterparty risk</td><td style="color:var(--red)">High — private deal</td><td style="color:var(--green)">None — clearinghouse</td></tr>
+              <tr><td>Liquidity</td><td style="color:var(--red)">Low — hard to exit</td><td style="color:var(--green)">Very high</td></tr>
+              <tr><td>Margin requirement</td><td>None standard</td><td>3–12% of notional</td></tr>
+              <tr><td>Physical delivery</td><td>Usually expected</td><td>Rare — &lt;5% deliver</td></tr>
+              <tr><td>Price transparency</td><td>Private — not public</td><td>Public — live quotes</td></tr>
+              <tr><td>Regulation</td><td>Minimal (ISDA governed)</td><td>CFTC regulated</td></tr>
+              <tr><td>Best for</td><td>Tailored corporate hedges</td><td>Speculation + standardized hedging</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: MECHANICS -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-eyebrow">How They Work</div>
+    <h2 class="section-title">Six Mechanics You Must Know</h2>
+    <p class="section-sub">These are the operational concepts that drive how futures are actually traded, priced, and managed on the NYMEX floor and in energy trading desks.</p>
+    <div class="mechanics-grid">
+      <div class="mech-card">
+        <div class="mech-num">01 · Margin</div>
+        <span class="mech-icon">💰</span>
+        <div class="mech-title">Initial &amp; Maintenance Margin</div>
+        <div class="mech-body">To enter a WTI futures position, you post initial margin (~$4,000–$7,000/contract). If your account falls below the maintenance margin level, you receive a <em>margin call</em> and must deposit funds immediately — or your position is liquidated.</div>
+      </div>
+      <div class="mech-card">
+        <div class="mech-num">02 · Mark-to-Market</div>
+        <span class="mech-icon">📊</span>
+        <div class="mech-title">Daily Settlement</div>
+        <div class="mech-body">Every night, NYMEX settles all open positions at the day's closing price. Gains are credited to your account; losses are debited. A $1 move in WTI = $1,000/contract gain or loss. This happens automatically, daily, for every open contract.</div>
+      </div>
+      <div class="mech-card">
+        <div class="mech-num">03 · Convergence</div>
+        <span class="mech-icon">🎯</span>
+        <div class="mech-title">Basis &amp; Convergence</div>
+        <div class="mech-body"><em>Basis</em> = Futures Price − Spot Price. As a contract approaches expiry, the futures price converges toward the spot price. If they didn't converge, arbitrageurs would exploit the difference until they do.</div>
+      </div>
+      <div class="mech-card">
+        <div class="mech-num">04 · Rollover</div>
+        <span class="mech-icon">🔄</span>
+        <div class="mech-title">Contract Rollover</div>
+        <div class="mech-body">Most traders never take delivery. Before expiry, they <em>roll</em> — close the near-month contract and open the next month's contract. In contango, this roll costs money (buy high, sell low). In backwardation, it earns a <em>positive roll yield</em>.</div>
+      </div>
+      <div class="mech-card">
+        <div class="mech-num">05 · Delivery</div>
+        <span class="mech-icon">🏭</span>
+        <div class="mech-title">Physical Delivery (WTI)</div>
+        <div class="mech-body">WTI futures settle via physical delivery at <strong style="color:var(--white)">Cushing, Oklahoma</strong> — the pipeline hub for North American crude. In April 2020, WTI briefly went to <strong style="color:var(--red)">−$37/bbl</strong> because storage at Cushing was nearly full and nobody wanted delivery.</div>
+      </div>
+      <div class="mech-card">
+        <div class="mech-num">06 · Leverage</div>
+        <span class="mech-icon">⚡</span>
+        <div class="mech-title">Leverage &amp; Notional Value</div>
+        <div class="mech-body">One WTI contract at $64/bbl = $64,000 notional exposure. But you only post ~$5,500 in margin. That's roughly <strong style="color:var(--amber)">12:1 leverage</strong>. A 5% price move creates a ~$3,200 gain or loss on a $5,500 deposit — powerful, and dangerous.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: FORWARD CURVE VISUALIZER -->
+<section class="curve-section">
+  <div class="wrap">
+    <div class="section-eyebrow">Interactive Visualizer</div>
+    <h2 class="section-title">The Forward Curve: Contango vs. Backwardation</h2>
+    <p class="section-sub">The shape of the futures curve tells you what the market expects. Drag the sliders to see how spot price, storage costs, and expectations shift the entire curve — and what structure we're currently seeing in oil.</p>
+
+    <div class="curve-layout" style="margin-top:36px">
+      <!-- Controls -->
+      <div class="curve-controls">
+        <div class="panel-title">Curve Parameters</div>
+
+        <div style="margin-bottom:16px">
+          <div class="ctrl-label" style="margin-bottom:10px;text-transform:none;font-size:12px;letter-spacing:0">Curve Structure</div>
+          <div class="curve-mode-btns">
+            <button class="mode-btn contango" id="btn-contango" onclick="setMode('contango')">Contango</button>
+            <button class="mode-btn active backwardation" id="btn-back" onclick="setMode('backwardation')">Backwardation</button>
+          </div>
+        </div>
+
+        <div class="ctrl-group">
+          <div class="ctrl-label">Spot Price (S₀) <span class="ctrl-val" id="cv-spot">$63.80</span></div>
+          <input type="range" id="sl-spot" min="40" max="120" step="0.5" value="63.8" oninput="updateCurve()">
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">Storage Cost ($/mo) <span class="ctrl-val" id="cv-stor">$0.60</span></div>
+          <input type="range" id="sl-stor" min="0" max="3" step="0.05" value="0.6" oninput="updateCurve()">
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">Risk-Free Rate <span class="ctrl-val" id="cv-rfr">4.5%</span></div>
+          <input type="range" id="sl-rfr" min="0" max="8" step="0.1" value="4.5" oninput="updateCurve()">
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">Market Sentiment <span class="ctrl-val" id="cv-sent">Bearish</span></div>
+          <input type="range" id="sl-sent" min="-5" max="5" step="0.5" value="-2" oninput="updateCurve()">
+        </div>
+
+        <div class="rule"></div>
+        <div class="stats-2col">
+          <div class="stat-box"><div class="sl">6-Mo Future</div><div class="sv gold" id="sv-6m">—</div></div>
+          <div class="stat-box"><div class="sl">12-Mo Future</div><div class="sv gold" id="sv-12m">—</div></div>
+          <div class="stat-box"><div class="sl">Curve Shape</div><div class="sv" id="sv-shape" style="font-size:13px;margin-top:2px">—</div></div>
+          <div class="stat-box"><div class="sl">6-Mo Basis</div><div class="sv" id="sv-basis">—</div></div>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div class="curve-chart-area">
+        <div class="chart-header">
+          <h3>WTI Forward Curve</h3>
+          <span class="curve-status backwardation" id="curve-status-label">Backwardation</span>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="curveCanvas" height="300"></canvas>
+        </div>
+        <div class="curve-insight">
+          <div class="ci-box">
+            <div class="ci-label">2025 Reality</div>
+            <div class="ci-text">OPEC+ accelerated production hikes in 2025, pushing the Brent curve from steep <strong>backwardation</strong> toward <strong>contango</strong> — signaling growing oversupply fears. Goldman cut its WTI forecast to $56/bbl.</div>
+          </div>
+          <div class="ci-box">
+            <div class="ci-label">Contango Signal</div>
+            <div class="ci-text">Future prices > spot price. Storage is profitable. Producers may <strong>delay sales</strong> and fill tanks. The market expects <strong>oversupply</strong>. Roll yield is negative for ETF investors.</div>
+          </div>
+          <div class="ci-box">
+            <div class="ci-label">Backwardation Signal</div>
+            <div class="ci-text">Spot > futures. Buyers pay premium for <strong>immediate delivery</strong>. Supply is tight. OPEC cuts or geopolitical disruptions drive backwardation. <strong>Positive roll yield</strong> for long investors.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: OIL MARKET CASE STUDIES -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-eyebrow">Real-World Case Studies</div>
+    <h2 class="section-title">Oil Futures in History &amp; Today</h2>
+    <p class="section-sub">Click any event to see how futures mechanics played out in one of the most volatile commodity markets on earth.</p>
+
+    <div class="case-grid">
+      <div class="case-card" id="cc-0" onclick="showCase(0)">
+        <div class="case-top">
+          <div class="case-year">April 2020</div>
+          <span class="case-icon">📉</span>
+          <div class="case-title">WTI Goes Negative</div>
+        </div>
+        <div class="case-stats">
+          <div class="cs-row"><span class="cs-key">WTI May contract</span><span class="cs-val red">−$37.63/bbl</span></div>
+          <div class="cs-row"><span class="cs-key">COVID demand collapse</span><span class="cs-val red">−30% YoY</span></div>
+          <div class="cs-row"><span class="cs-key">Cushing capacity</span><span class="cs-val amber">~95% full</span></div>
+          <div class="cs-row"><span class="cs-key">Curve structure</span><span class="cs-val amber">Super Contango</span></div>
+        </div>
+      </div>
+      <div class="case-card" id="cc-1" onclick="showCase(1)">
+        <div class="case-top">
+          <div class="case-year">2025 — Ongoing</div>
+          <span class="case-icon">⚖️</span>
+          <div class="case-title">OPEC+ Unwinds Cuts</div>
+        </div>
+        <div class="case-stats">
+          <div class="cs-row"><span class="cs-key">Output increase</span><span class="cs-val amber">+1 Mbpd (Apr–Jun)</span></div>
+          <div class="cs-row"><span class="cs-key">WTI spot price</span><span class="cs-val red">~$60–64/bbl</span></div>
+          <div class="cs-row"><span class="cs-key">Goldman WTI forecast</span><span class="cs-val red">$56/bbl avg</span></div>
+          <div class="cs-row"><span class="cs-key">Curve shift</span><span class="cs-val amber">→ Contango</span></div>
+        </div>
+      </div>
+      <div class="case-card" id="cc-2" onclick="showCase(2)">
+        <div class="case-top">
+          <div class="case-year">2025 — Geopolitical</div>
+          <span class="case-icon">🚢</span>
+          <div class="case-title">Strait of Hormuz Risk</div>
+        </div>
+        <div class="case-stats">
+          <div class="cs-row"><span class="cs-key">WTI spike</span><span class="cs-val green">+$111/bbl</span></div>
+          <div class="cs-row"><span class="cs-key">Iran tensions</span><span class="cs-val red">Nuclear talks stalled</span></div>
+          <div class="cs-row"><span class="cs-key">Strait volume</span><span class="cs-val amber">~20% world supply</span></div>
+          <div class="cs-row"><span class="cs-key">Risk premium</span><span class="cs-val gold">Embedded in futures</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-detail" id="case-detail"></div>
+  </div>
+</section>
+
+<!-- SECTION 5: HEDGERS vs SPECULATORS -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-eyebrow">Market Participants</div>
+    <h2 class="section-title">Who Uses Futures — and Why</h2>
+    <p class="section-sub">Futures markets exist because two types of participants need each other: those who want to eliminate price risk, and those willing to take it on for profit.</p>
+    <div class="actors-grid">
+      <div class="actor-card">
+        <div class="actor-header">
+          <div class="actor-icon">🏗️</div>
+          <div>
+            <div class="actor-name">The Hedger</div>
+            <div class="actor-tag tag-hedger">Risk Reducer</div>
+          </div>
+        </div>
+        <div class="actor-body">
+          <div class="actor-goal">Hedgers use futures to lock in prices and eliminate uncertainty about future cash flows. They have a real economic exposure to the underlying commodity — they're either buying it or selling it in the physical market.</div>
+          <div class="actor-example">
+            <strong>Example — Pioneer Natural Resources (Producer):</strong><br>
+            Produces 500,000 bbl/day of WTI. Current price $64/bbl. Worried prices fall before they can sell. They <em>sell (short)</em> WTI December futures at $63/bbl — locking in $63 regardless of where prices go. If prices fall to $50, they lose on the physical sale but gain on the futures. Net: still get ~$63/bbl.<br><br>
+            <strong>Example — American Airlines (Consumer):</strong><br>
+            Needs 4 billion gallons of jet fuel annually. They <em>buy (long)</em> crude futures to lock in fuel costs and protect their operating margins from spikes.
+          </div>
+        </div>
+      </div>
+      <div class="actor-card">
+        <div class="actor-header">
+          <div class="actor-icon">📈</div>
+          <div>
+            <div class="actor-name">The Speculator</div>
+            <div class="actor-tag tag-speculator">Risk Taker</div>
+          </div>
+        </div>
+        <div class="actor-body">
+          <div class="actor-goal">Speculators have no interest in the physical commodity. They trade futures purely to profit from price movements, providing the liquidity that makes hedging possible. Without speculators, there would be no one to take the other side of a hedger's trade.</div>
+          <div class="actor-example">
+            <strong>Example — Macro Hedge Fund:</strong><br>
+            Believes OPEC+ will fail to enforce its production cuts. They <em>sell (short)</em> 500 WTI contracts at $64. If oil falls to $58, each contract gains $6,000 → total profit: $3,000,000. They close the position before delivery — they never see a barrel of oil.<br><br>
+            <strong>Example — Algorithmic Trading Firm:</strong><br>
+            Trades the WTI–Brent spread electronically, exploiting the $3.35/bbl price difference between benchmarks. Holds positions for minutes or hours, providing continuous market liquidity.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: MARGIN SIMULATOR -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-eyebrow">Interactive Simulator</div>
+    <h2 class="section-title">Mark-to-Market: A Week in the Life</h2>
+    <p class="section-sub">You've bought 3 WTI crude futures contracts at $64.00/bbl. Watch how daily settlement and margin calls play out over a volatile week. Adjust the setup and see the results update live.</p>
+
+    <div class="margin-layout">
+      <div class="margin-panel">
+        <div class="panel-title">Position Setup</div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">Entry Price ($/bbl) <span class="ctrl-val" id="mv-entry">$64.00</span></div>
+          <input type="range" id="ms-entry" min="50" max="90" step="0.5" value="64" oninput="updateMargin()">
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">Contracts <span class="ctrl-val" id="mv-cts">3</span></div>
+          <input type="range" id="ms-cts" min="1" max="10" step="1" value="3" oninput="updateMargin()">
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">Initial Margin/Contract <span class="ctrl-val" id="mv-im">$5,500</span></div>
+          <input type="range" id="ms-im" min="3000" max="10000" step="250" value="5500" oninput="updateMargin()">
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">Maint. Margin/Contract <span class="ctrl-val" id="mv-mm">$4,000</span></div>
+          <input type="range" id="ms-mm" min="2000" max="8000" step="250" value="4000" oninput="updateMargin()">
+        </div>
+        <div class="rule"></div>
+        <div class="stats-2col">
+          <div class="stat-box"><div class="sl">Total Margin</div><div class="sv gold" id="sv-totmarg">$16,500</div></div>
+          <div class="stat-box"><div class="sl">Notional</div><div class="sv gold" id="sv-notional">$192,000</div></div>
+          <div class="stat-box"><div class="sl">Leverage</div><div class="sv amber" id="sv-leverage">11.6×</div></div>
+          <div class="stat-box"><div class="sl">Maint. Floor</div><div class="sv red" id="sv-maintfloor">$12,000</div></div>
+        </div>
+      </div>
+
+      <div class="margin-table-wrap">
+        <div class="mt-header">
+          <div class="mt-title">Daily Mark-to-Market Log</div>
+          <div class="mt-badge">WTI Long Position</div>
+        </div>
+        <div class="margin-days" id="margin-days-table"></div>
+        <div class="margin-summary" id="margin-summary"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 7: KNOWLEDGE CHECK -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-eyebrow">Knowledge Check</div>
+    <h2 class="section-title">Test Your Understanding</h2>
+    <p class="section-sub">Five questions on the concepts covered in this module. Click to reveal instant feedback.</p>
+    <div class="quiz-grid">
+
+      <div class="quiz-card">
+        <div class="quiz-q">1. WTI crude futures are trading in contango. You hold a long position through a rollover. What happens to your position?</div>
+        <div class="quiz-opts">
+          <div class="quiz-opt" onclick="ans(this,false,'q1','Contango hurts long rollers because the next month's contract is MORE expensive, not less.')">A. You gain a positive roll yield — the next contract is cheaper</div>
+          <div class="quiz-opt" onclick="ans(this,true,'q1','Correct! In contango, you sell the expiring contract (lower price) and buy the next month (higher price). This is a negative roll yield — you\'re constantly paying up to maintain your long exposure.')">B. You incur a negative roll yield — you sell low and buy high</div>
+          <div class="quiz-opt" onclick="ans(this,false,'q1','Roll yield is real and meaningful — ETFs like USO have historically lost significant value due to contango roll costs.')">C. Rolling has no economic impact on your P&L</div>
+          <div class="quiz-opt" onclick="ans(this,false,'q1','Backwardation creates positive roll yield (sell high, buy the cheaper next contract), not contango.')">D. Roll yield is positive only in contango</div>
+        </div>
+        <div class="quiz-feedback" id="q1-fb"></div>
+      </div>
+
+      <div class="quiz-card">
+        <div class="quiz-q">2. You're long 5 WTI futures contracts at $65/bbl. Oil falls to $62 overnight. Your initial margin was $6,000/contract. What is your total mark-to-market loss?</div>
+        <div class="quiz-opts">
+          <div class="quiz-opt" onclick="ans(this,false,'q2','This only accounts for 1 contract. You have 5 contracts.')">A. −$3,000</div>
+          <div class="quiz-opt" onclick="ans(this,true,'q2','Correct! $3 move × 1,000 bbl × 5 contracts = −$15,000. This is debited from your margin account tonight. If your account balance falls below the maintenance margin level, you will receive a margin call.')">B. −$15,000</div>
+          <div class="quiz-opt" onclick="ans(this,false,'q2','$62,000 would be the value of 1 contract if oil were at $62. The P&L is the price change times contract size.')">C. −$62,000</div>
+          <div class="quiz-opt" onclick="ans(this,false,'q2','Margin is not a maximum loss cap — it\'s a performance bond. Losses can exceed initial margin.')">D. −$30,000 (the full margin posted)</div>
+        </div>
+        <div class="quiz-feedback" id="q2-fb"></div>
+      </div>
+
+      <div class="quiz-card">
+        <div class="quiz-q">3. In April 2020, WTI futures traded at −$37/bbl. Which explanation is most accurate?</div>
+        <div class="quiz-opts">
+          <div class="quiz-opt" onclick="ans(this,false,'q3','OPEC actions contributed to oversupply, but the technical driver of negative prices was the delivery mechanism and storage constraints.')">A. OPEC cut production, reducing the supply of oil below demand</div>
+          <div class="quiz-opt" onclick="ans(this,false,'q3','Oil itself can\'t have negative intrinsic value. The issue was the futures delivery mechanism, not the commodity.')">B. Oil became genuinely worthless as demand for fossil fuels collapsed permanently</div>
+          <div class="quiz-opt" onclick="ans(this,true,'q3','Correct! The May futures contract required physical delivery at Cushing, OK. Storage was nearly full. Contract holders were desperate to close positions — they would literally pay someone to take the oil. This is a mechanics failure, not a fundamental one. Prices recovered within weeks.')">C. Holders of the May contract faced physical delivery at a full Cushing, OK storage hub — they paid others to take the oil</div>
+          <div class="quiz-opt" onclick="ans(this,false,'q3','Negative prices on a futures contract can occur due to delivery mechanics. Bitcoin has no physical delivery issue.')">D. It was a technical error similar to a Bitcoin flash crash</div>
+        </div>
+        <div class="quiz-feedback" id="q3-fb"></div>
+      </div>
+
+      <div class="quiz-card">
+        <div class="quiz-q">4. An airline buys crude oil futures to hedge its fuel costs. Oil prices then fall sharply. What best describes the outcome?</div>
+        <div class="quiz-opts">
+          <div class="quiz-opt" onclick="ans(this,false,'q4','If they only hedge 50%, the other half of their exposure is unhedged and benefits from the lower market price.')">A. The airline profits significantly from falling oil prices</div>
+          <div class="quiz-opt" onclick="ans(this,false,'q4','Losses on futures are offset by cheaper physical fuel purchases. That\'s the point of the hedge.')">B. The airline loses money on both the hedge and fuel costs</div>
+          <div class="quiz-opt" onclick="ans(this,true,'q4','Correct! This is the fundamental trade-off of hedging. The airline loses on its long futures position but pays less for physical fuel in the market. Net result: it still pays approximately the locked-in price. The hedge worked as intended — it eliminated the upside but protected against spikes.')">C. The airline loses on the futures hedge but pays less for actual fuel — net cost stays near the locked-in price</div>
+          <div class="quiz-opt" onclick="ans(this,false,'q4','Futures contracts do not automatically cancel — you must actively close them by taking an offsetting trade.')">D. The hedge automatically cancels, leaving the airline with market exposure</div>
+        </div>
+        <div class="quiz-feedback" id="q4-fb"></div>
+      </div>
+
+      <div class="quiz-card">
+        <div class="quiz-q">5. The theoretical forward price for crude oil (no convenience yield) is best described by which formula?</div>
+        <div class="quiz-opts">
+          <div class="quiz-opt" onclick="ans(this,false,'q5','This is just the cost of carry without the time component. The full formula compounds the carrying costs over the contract period.')">A. F₀ = S₀ + (r + storage) × T</div>
+          <div class="quiz-opt" onclick="ans(this,true,'q5','Correct! The cost-of-carry model says the fair forward price equals the spot price compounded at the risk-free rate plus storage cost over the life of the contract. In practice, a "convenience yield" (the value of having oil on hand) reduces the forward price below this theoretical level.')">B. F₀ = S₀ × e^((r + storage) × T)</div>
+          <div class="quiz-opt" onclick="ans(this,false,'q5','Dividing by e^(rT) would give the present value of a future cash flow — not the forward price formula.')">C. F₀ = S₀ ÷ e^(rT)</div>
+          <div class="quiz-opt" onclick="ans(this,false,'q5','This Black-Scholes formula values an option\'s extrinsic value — it\'s for options, not forward pricing.')">D. F₀ = S₀ × N(d₁) − K × e^(−rT) × N(d₂)</div>
+        </div>
+        <div class="quiz-feedback" id="q5-fb"></div>
+      </div>
+
+      <div class="quiz-card">
+        <div class="quiz-q">6. OPEC+ voted in 2025 to accelerate the unwinding of 2.2 million bpd in production cuts. What was the likely immediate effect on the oil futures curve?</div>
+        <div class="quiz-opts">
+          <div class="quiz-opt" onclick="ans(this,false,'q6','More supply would push prices down and shift the curve toward contango, not steeper backwardation.')">A. The curve steepened into deeper backwardation as supply tightened</div>
+          <div class="quiz-opt" onclick="ans(this,false,'q6','More barrels hitting the market would push near-term prices down, not up.')">B. Spot prices spiked because markets feared an immediate shortage</div>
+          <div class="quiz-opt" onclick="ans(this,true,'q6','Correct! The prospect of more near-term supply pushed spot/near-term prices lower while longer-dated contracts held relatively firm, flipping the curve toward contango. Goldman Sachs and Barclays both cut their WTI forecasts, with Goldman projecting as low as the high $40s in a weak demand scenario.')">C. The curve shifted toward contango as near-term oversupply expectations grew</div>
+          <div class="quiz-opt" onclick="ans(this,false,'q6','OPEC+ decisions have direct and immediate effects on oil futures prices and curve structure.')">D. No effect — OPEC decisions don\'t impact futures prices</div>
+        </div>
+        <div class="quiz-feedback" id="q6-fb"></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- GLOSSARY -->
+<section class="section" style="border-bottom:none;padding-bottom:72px">
+  <div class="wrap">
+    <div class="section-eyebrow">Key Terms</div>
+    <h2 class="section-title">Glossary</h2>
+    <div class="gloss-grid">
+      <div class="gloss-item"><div class="g-term">Futures Contract</div><div class="g-def">A standardized, exchange-traded obligation to buy or sell an asset at a set price and date. Settled daily via mark-to-market.</div></div>
+      <div class="gloss-item"><div class="g-term">Forward Contract</div><div class="g-def">A private, customizable OTC agreement to buy or sell an asset at a set price at maturity. No daily settlement; higher counterparty risk.</div></div>
+      <div class="gloss-item"><div class="g-term">Contango</div><div class="g-def">When futures prices are higher than the current spot price. Signals expected oversupply; creates negative roll yield for long futures investors.</div></div>
+      <div class="gloss-item"><div class="g-term">Backwardation</div><div class="g-def">When futures prices are lower than the spot price. Signals supply tightness; creates positive roll yield and benefits long-futures holders.</div></div>
+      <div class="gloss-item"><div class="g-term">Mark-to-Market</div><div class="g-def">The daily process of crediting gains and debiting losses from futures accounts based on the day's settlement price.</div></div>
+      <div class="gloss-item"><div class="g-term">Basis</div><div class="g-def">The difference between the futures price and the spot price (F − S). Converges to zero at contract expiration.</div></div>
+      <div class="gloss-item"><div class="g-term">Initial Margin</div><div class="g-def">The deposit required to open a futures position — typically 3–12% of the contract's notional value.</div></div>
+      <div class="gloss-item"><div class="g-term">Maintenance Margin</div><div class="g-def">The minimum account balance to hold an open position. Falling below this triggers a margin call.</div></div>
+      <div class="gloss-item"><div class="g-term">Roll Yield</div><div class="g-def">The gain or loss from rolling an expiring futures contract into the next month. Positive in backwardation; negative in contango.</div></div>
+      <div class="gloss-item"><div class="g-term">Cost of Carry</div><div class="g-def">The cost of holding an asset until delivery: financing cost + storage cost − convenience yield. Sets the theoretical forward price.</div></div>
+      <div class="gloss-item"><div class="g-term">Convenience Yield</div><div class="g-def">The non-monetary benefit of physically holding a commodity (e.g., being able to run your refinery). Reduces the forward price below theoretical cost-of-carry.</div></div>
+      <div class="gloss-item"><div class="g-term">WTI / Brent</div><div class="g-def">West Texas Intermediate and Brent are the two main crude benchmarks. WTI is the US benchmark (Cushing, OK delivery); Brent is the global benchmark.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-left">
+      <div class="foot-title">Markets &amp; <em>Derivatives</em></div>
+      <div class="foot-sep"></div>
+      <div class="foot-note">Module 03 · Futures &amp; Forward Markets</div>
+    </div>
+    <div class="foot-right">Bodie, Kane &amp; Marcus · Chapters 22–23 · CME Group / EIA Data</div>
+  </div>
+</footer>
+
+<script>
+// ═══════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════
+function switchTab(id) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  const map = { fwd:0, fut:1, cmp:2 };
+  document.querySelectorAll('.tab-btn')[map[id]].classList.add('active');
+}
+
+// ═══════════════════════════════════════
+// FORWARD CURVE VISUALIZER
+// ═══════════════════════════════════════
+let curveMode = 'backwardation';
+
+function setMode(m) {
+  curveMode = m;
+  document.getElementById('btn-contango').className = 'mode-btn' + (m==='contango' ? ' active contango' : '');
+  document.getElementById('btn-back').className = 'mode-btn' + (m==='backwardation' ? ' active backwardation' : '');
+  // Adjust sentiment slider to match
+  document.getElementById('sl-sent').value = m === 'contango' ? '2' : '-2';
+  updateCurve();
+}
+
+function updateCurve() {
+  const spot  = +document.getElementById('sl-spot').value;
+  const stor  = +document.getElementById('sl-stor').value;
+  const rfr   = +document.getElementById('sl-rfr').value / 100;
+  const sent  = +document.getElementById('sl-sent').value;
+
+  document.getElementById('cv-spot').textContent = '$'+spot.toFixed(2);
+  document.getElementById('cv-stor').textContent = '$'+stor.toFixed(2);
+  document.getElementById('cv-rfr').textContent  = (rfr*100).toFixed(1)+'%';
+  const sentLabel = sent > 1 ? 'Bullish' : sent < -1 ? 'Bearish' : 'Neutral';
+  document.getElementById('cv-sent').textContent = sentLabel;
+
+  // Build curve: months 1–18
+  const months = Array.from({length:18}, (_,i) => i+1);
+  // Base cost-of-carry curve
+  const carryRate = rfr + stor * 12 / spot;
+  // Sentiment modifier: positive = contango, negative = backwardation (convenience yield)
+  const convYield = -sent * 0.008;
+
+  const prices = months.map(m => {
+    const t = m / 12;
+    return spot * Math.exp((carryRate + convYield) * t);
+  });
+
+  const isContango = prices[5] > spot;
+  const shape = isContango ? 'Contango' : 'Backwardation';
+  const colorClass = isContango ? 'amber' : 'green';
+
+  document.getElementById('sv-6m').textContent  = '$'+prices[5].toFixed(2);
+  document.getElementById('sv-12m').textContent = '$'+prices[11].toFixed(2);
+  const sv = document.getElementById('sv-shape');
+  sv.textContent = shape; sv.className = 'sv '+colorClass;
+  const basis = prices[5] - spot;
+  const bv = document.getElementById('sv-basis');
+  bv.textContent = (basis >= 0 ? '+' : '') + '$'+basis.toFixed(2);
+  bv.className = 'sv ' + (basis >= 0 ? 'amber' : 'green');
+
+  const sl = document.getElementById('curve-status-label');
+  sl.textContent = shape; sl.className = 'curve-status ' + shape.toLowerCase();
+
+  drawCurve(spot, months, prices, isContango);
+}
+
+function drawCurve(spot, months, prices, isContango) {
+  const canvas = document.getElementById('curveCanvas');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const cw = canvas.parentElement.clientWidth - 0;
+  const ch = 300;
+  canvas.width = cw*dpr; canvas.height = ch*dpr;
+  canvas.style.width = cw+'px'; canvas.style.height = ch+'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const PAD = { top:18, right:22, bottom:40, left:64 };
+  const gw = cw - PAD.left - PAD.right;
+  const gh = ch - PAD.top - PAD.bottom;
+
+  const allY = [spot, ...prices];
+  let yMin = Math.min(...allY) * 0.97;
+  let yMax = Math.max(...allY) * 1.03;
+
+  const xS = m => PAD.left + ((m-1) / (months.length-1)) * gw;
+  const yS = v => PAD.top + gh - ((v-yMin)/(yMax-yMin))*gh;
+
+  ctx.fillStyle = '#162032'; ctx.fillRect(0,0,cw,ch);
+
+  // Grid
+  for (let i=0;i<=5;i++) {
+    const v = yMin + (yMax-yMin)*i/5;
+    const y = yS(v);
+    ctx.strokeStyle='rgba(201,168,76,0.07)'; ctx.lineWidth=1; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+gw,y); ctx.stroke();
+    ctx.fillStyle='#8a9bb0'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='right';
+    ctx.fillText('$'+v.toFixed(1), PAD.left-6, y+4);
+  }
+  for (let i=0;i<months.length;i+=3) {
+    const x = xS(months[i]);
+    ctx.strokeStyle='rgba(201,168,76,0.07)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x,PAD.top); ctx.lineTo(x,PAD.top+gh); ctx.stroke();
+    ctx.fillStyle='#8a9bb0'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='center';
+    ctx.fillText('M'+(i+1), x, PAD.top+gh+16);
+  }
+
+  // Spot line
+  const spotY = yS(spot);
+  ctx.strokeStyle='rgba(168,197,218,0.3)'; ctx.lineWidth=1; ctx.setLineDash([5,5]);
+  ctx.beginPath(); ctx.moveTo(PAD.left,spotY); ctx.lineTo(PAD.left+gw,spotY); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#a8c5da'; ctx.font='9px DM Mono,monospace'; ctx.textAlign='left';
+  ctx.fillText('Spot $'+spot.toFixed(2), PAD.left+4, spotY-5);
+
+  // Gradient fill under curve
+  const lineColor = isContango ? '#f0a040' : '#3dd68c';
+  ctx.save();
+  const grad = ctx.createLinearGradient(0,PAD.top,0,PAD.top+gh);
+  grad.addColorStop(0, lineColor+'28');
+  grad.addColorStop(1, lineColor+'00');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  months.forEach((m,i) => { i===0 ? ctx.moveTo(xS(m),yS(prices[i])) : ctx.lineTo(xS(m),yS(prices[i])); });
+  ctx.lineTo(xS(months[months.length-1]), PAD.top+gh);
+  ctx.lineTo(PAD.left, PAD.top+gh);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+
+  // Curve line
+  ctx.strokeStyle = lineColor; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.beginPath();
+  months.forEach((m,i) => { i===0 ? ctx.moveTo(xS(m),yS(prices[i])) : ctx.lineTo(xS(m),yS(prices[i])); });
+  ctx.stroke();
+
+  // Spot dot
+  ctx.beginPath(); ctx.arc(PAD.left, spotY, 5, 0, Math.PI*2);
+  ctx.fillStyle = '#a8c5da'; ctx.fill();
+  ctx.strokeStyle = '#162032'; ctx.lineWidth = 1.5; ctx.stroke();
+
+  // Axis label
+  ctx.fillStyle='#8a9bb0'; ctx.font='10px DM Sans,sans-serif'; ctx.textAlign='center';
+  ctx.fillText('Contract Month (from today)', PAD.left+gw/2, ch-4);
+}
+
+// ═══════════════════════════════════════
+// CASE STUDIES
+// ═══════════════════════════════════════
+const cases = [
+  {
+    year: 'April 20, 2020', icon: '📉', title: 'WTI Goes Negative: −$37.63/bbl',
+    body: `On April 20, 2020, the WTI May futures contract settled at −$37.63 per barrel — the first time oil futures had ever traded below zero. This wasn't a market malfunction; it was futures mechanics working exactly as designed.<br><br>
+    The COVID-19 pandemic had collapsed global oil demand by roughly 30% year-over-year. OPEC+ had just announced massive production cuts, but they wouldn't take effect until May 1 — one day too late. With global storage nearly exhausted, anyone holding a May contract faced a crisis: either take physical delivery of 1,000 barrels of crude oil at Cushing, Oklahoma — where tank farms were at ~95% capacity — or sell at any price. Sellers were willing to pay buyers to take the oil off their hands.`,
+    callout: '📌 Key lesson: Futures require physical delivery or an exit before expiry. The convergence of delivery mechanics + storage constraints = unprecedented negative price. The June contract, with more time to wait, traded at +$20.',
+    rows: [
+      { s: 'May contract (delivery April 21)', payoff: '−$37.63/bbl', who: 'Long holders', note: 'Forced to sell at any price' },
+      { s: 'June contract (same day)', payoff: '+$20.43/bbl', who: 'Patient longs', note: 'Spread of $58/bbl in one day' },
+      { s: 'Physical seller at Cushing', payoff: 'Received payment to take oil', who: 'Storage holders', note: 'Rare positive cash flow for buyer' },
+      { s: 'Short speculator in May contract', payoff: '+$37.63/bbl', who: 'Shorts', note: 'Massive profit on the collapse' },
+    ]
+  },
+  {
+    year: '2025 — Ongoing', icon: '⚖️', title: 'OPEC+ Unwinds 2.2 Million bpd in Cuts',
+    body: `In 2025, OPEC+ accelerated the rollback of production cuts it had implemented since 2022. Over April, May, and June alone, the group returned nearly 1 million barrels per day to the market — about 44% of the 2.2 Mbpd in voluntary cuts. A further 411,000 bpd hike was announced for July.<br><br>
+    The stated motivation was disciplining over-producers like Iraq and Kazakhstan (which routinely exceeded quotas) and testing whether the market could absorb more supply. Saudi Arabia appeared to be sending a message: comply with quotas or we flood the market. Goldman Sachs cut its WTI forecast to $56/bbl average with potential lows in the high $40s. The futures curve, which had been in backwardation for most of 2024, began shifting toward contango.`,
+    callout: '📌 Key lesson: OPEC+ decisions directly shape the entire forward curve, not just the spot price. The shift toward contango in late-2025 contracts was a real-time signal of oversupply expectations — textbook futures pricing in action.',
+    rows: [
+      { s: 'WTI spot (Q2 2025)', payoff: '~$63–64/bbl', who: 'Market', note: 'Down from ~$80 in 2024' },
+      { s: 'Goldman Sachs WTI forecast', payoff: '$56/bbl avg', who: 'Sell-side', note: 'High $40s in downside scenario' },
+      { s: 'Brent curve structure (Oct+)', payoff: 'Contango', who: 'Forward market', note: 'Oversupply priced in' },
+      { s: 'Saudi hedge fund implication', payoff: 'Short WTI', who: 'Speculators', note: 'Profitable position in H1 2025' },
+    ]
+  },
+  {
+    year: '2025 — Geopolitical Risk', icon: '🚢', title: 'Strait of Hormuz: Risk Premium in Futures',
+    body: `The Strait of Hormuz is the world's most important oil chokepoint: roughly 20% of global oil supply transits through the narrow passage between Iran and the Arabian Peninsula. In early 2025, escalating US–Iran nuclear tensions drove risk premiums into oil futures prices even without a single barrel being disrupted — demonstrating how futures markets price expected future events, not just current reality.<br><br>
+    Reports that the US might intercept Iranian tankers, combined with fears of Iran closing the Strait in retaliation, drove WTI futures to spike above $111/bbl in certain geopolitical stress scenarios — a $47+ premium over the concurrent fundamental price near $64/bbl. This is the futures market's "insurance" function at work.`,
+    callout: '📌 Key lesson: Futures prices embed geopolitical risk premiums. The gap between fundamental value (~$64) and stress-scenario pricing (~$111) represents the market\'s assessment of tail risk. EIA forecasts Brent remaining above $95 while Hormuz risks persist.',
+    rows: [
+      { s: 'WTI "fundamental" price', payoff: '~$63–64/bbl', who: 'Supply/demand basis', note: 'OPEC+ oversupply outlook' },
+      { s: 'WTI with Hormuz risk premium', payoff: '~$111/bbl', who: 'Geopolitical tail risk', note: 'Stress scenario pricing' },
+      { s: 'Risk premium embedded', payoff: '+$47/bbl', who: 'Market fear gauge', note: 'Largest since COVID' },
+      { s: 'Winner if Hormuz closes', payoff: 'Long crude + VIX calls', who: 'Hedgers & speculators', note: 'Flight to physical supply' },
+    ]
+  }
+];
+
+let activeCase = null;
+
+function showCase(idx) {
+  document.querySelectorAll('.case-card').forEach((c,i) => c.classList.toggle('active', i===idx));
+  const det = document.getElementById('case-detail');
+  if (activeCase === idx) {
+    det.classList.remove('open'); activeCase = null;
+    document.querySelectorAll('.case-card').forEach(c => c.classList.remove('active'));
+    return;
+  }
+  activeCase = idx;
+  const c = cases[idx];
+  const rows = c.rows.map(r => `<tr>
+    <td>${r.s}</td>
+    <td class="${r.payoff.includes('−') || r.payoff.toLowerCase().includes('short') ? 'td-neg' : r.payoff.includes('+') ? 'td-pos' : 'td-neu'}">${r.payoff}</td>
+    <td>${r.who}</td>
+    <td class="td-neu">${r.note}</td>
+  </tr>`).join('');
+  det.innerHTML = `
+    <div class="cd-left">
+      <div class="cd-eyebrow">${c.icon} ${c.year}</div>
+      <div class="cd-title">${c.title}</div>
+      <div class="cd-body">${c.body}</div>
+      <div class="cd-callout">${c.callout}</div>
+    </div>
+    <div class="cd-right">
+      <div class="cd-eyebrow">Payoff Analysis</div>
+      <table class="payoff-table">
+        <thead><tr><th>Scenario</th><th>Price / P&L</th><th>Who</th><th>Context</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  det.classList.add('open');
+  setTimeout(() => det.scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
+}
+
+// ═══════════════════════════════════════
+// MARGIN SIMULATOR
+// ═══════════════════════════════════════
+// Preset price path (a volatile week)
+const priceChanges = [0, +1.8, -3.2, -2.1, +0.9, -4.5];
+
+function updateMargin() {
+  const entry = +document.getElementById('ms-entry').value;
+  const cts   = +document.getElementById('ms-cts').value;
+  const im    = +document.getElementById('ms-im').value;
+  const mm    = +document.getElementById('ms-mm').value;
+
+  document.getElementById('mv-entry').textContent = '$'+entry.toFixed(2);
+  document.getElementById('mv-cts').textContent   = cts;
+  document.getElementById('mv-im').textContent    = '$'+im.toLocaleString();
+  document.getElementById('mv-mm').textContent    = '$'+mm.toLocaleString();
+
+  const notional = entry * 1000 * cts;
+  const totalIM  = im * cts;
+  const totalMM  = mm * cts;
+  const leverage = (notional / totalIM).toFixed(1);
+  document.getElementById('sv-totmarg').textContent  = '$'+totalIM.toLocaleString();
+  document.getElementById('sv-notional').textContent = '$'+notional.toLocaleString();
+  document.getElementById('sv-leverage').textContent = leverage+'×';
+  document.getElementById('sv-maintfloor').textContent = '$'+totalMM.toLocaleString();
+
+  // Build daily rows
+  let balance = totalIM;
+  let cumPnL  = 0;
+  const days = ['Open', 'Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'];
+  let prices  = [entry];
+  for (let i=1;i<priceChanges.length;i++) prices.push(+(prices[i-1]+priceChanges[i]).toFixed(2));
+
+  let html = `<div class="md-row header">
+    <div>Day</div><div>Price</div><div>Daily Move</div><div style="text-align:right">P&L</div><div style="text-align:right">Balance</div>
+  </div>`;
+
+  let marginCallCount = 0;
+  for (let i=0; i<days.length; i++) {
+    const pnl = (priceChanges[i] * 1000 * cts);
+    balance  += pnl;
+    cumPnL   += pnl;
+    const isCall = (i > 0) && (balance < totalMM);
+    if (isCall) { balance = totalIM; marginCallCount++; }
+    const rowClass = isCall ? 'mc-call' : '';
+    const pnlColor = pnl > 0 ? 'var(--green)' : pnl < 0 ? 'var(--red)' : 'var(--gray)';
+    const balColor = balance <= totalMM*1.1 ? 'var(--red)' : 'var(--white)';
+    html += `<div class="md-row ${rowClass}">
+      <div class="md-day">${days[i]}</div>
+      <div class="md-price" style="color:var(--white)">$${prices[i].toFixed(2)}</div>
+      <div class="md-change" style="color:${i===0?'var(--gray)':priceChanges[i]>0?'var(--green)':'var(--red)'}">
+        ${i===0?'—':(priceChanges[i]>0?'+':'')+priceChanges[i].toFixed(2)+'/bbl'}
+        ${isCall ? '<span style="color:var(--red);margin-left:8px;font-size:10px;background:rgba(240,96,96,0.15);padding:2px 6px;border-radius:4px">MARGIN CALL</span>' : ''}
+      </div>
+      <div class="md-pnl" style="color:${pnlColor}">${i===0?'—':(pnl>=0?'+':'')+pnl.toLocaleString()}</div>
+      <div class="md-balance" style="color:${balColor}">$${balance.toLocaleString()}</div>
+    </div>`;
+  }
+  document.getElementById('margin-days-table').innerHTML = html;
+
+  const finalColor = cumPnL >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('margin-summary').innerHTML = `
+    <div class="ms-cell"><div class="ms-val" style="color:var(--ice)">$${entry.toFixed(2)}</div><div class="ms-lbl">Entry Price</div></div>
+    <div class="ms-cell"><div class="ms-val" style="color:var(--white)">$${prices[5].toFixed(2)}</div><div class="ms-lbl">Close Price</div></div>
+    <div class="ms-cell"><div class="ms-val" style="color:${finalColor}">${cumPnL>=0?'+':''}\$${cumPnL.toLocaleString()}</div><div class="ms-lbl">Week P&L</div></div>
+    <div class="ms-cell"><div class="ms-val" style="color:var(--amber)">${marginCallCount}</div><div class="ms-lbl">Margin Call${marginCallCount!==1?'s':''}</div></div>`;
+}
+
+// ═══════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════
+const answered = {};
+function ans(el, correct, qid, feedback) {
+  if (answered[qid]) return;
+  answered[qid] = true;
+  const opts = el.closest('.quiz-opts').querySelectorAll('.quiz-opt');
+  opts.forEach(o => {
+    o.style.pointerEvents = 'none';
+    if (o === el) o.classList.add(correct ? 'correct' : 'wrong');
+    else o.classList.add('dimmed');
+  });
+  const fb = document.getElementById(qid+'-fb');
+  fb.textContent = (correct ? '✓ ' : '✗ ') + feedback;
+  fb.classList.add('show');
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+window.addEventListener('load', () => {
+  updateCurve();
+  updateMargin();
+});
+window.addEventListener('resize', () => {
+  updateCurve();
+});
+</script>
+</body>
+</html>
