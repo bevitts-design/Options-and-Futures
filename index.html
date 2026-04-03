@@ -325,6 +325,57 @@
     padding: 4px 28px; transform: rotate(45deg);
   }
 
+  /* ── SLIDES SECTION ── */
+  .slides-section {
+    padding: 48px 0 56px;
+    border-top: 1px solid var(--border-dim);
+  }
+  .slides-section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); opacity: 0.8; margin-bottom: 6px;
+  }
+  .slides-section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(22px, 3vw, 30px);
+    letter-spacing: -0.5px; margin-bottom: 28px;
+  }
+  .slides-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .slide-card {
+    display: flex; align-items: center; gap: 18px;
+    background: var(--navy-mid); border: 1px solid var(--border-dim);
+    border-radius: 12px; padding: 22px 24px;
+    text-decoration: none; color: var(--white);
+    transition: border-color 0.25s, background 0.25s;
+  }
+  .slide-card:hover {
+    border-color: var(--border);
+    background: var(--navy-light);
+  }
+  .slide-card-icon { font-size: 32px; flex-shrink: 0; }
+  .slide-card-body { min-width: 0; }
+  .slide-card-type {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 5px;
+  }
+  .slide-card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px; letter-spacing: -0.3px; line-height: 1.2; margin-bottom: 6px;
+  }
+  .slide-card-desc {
+    font-size: 12px; color: var(--gray); line-height: 1.6;
+  }
+  .slide-card-cta {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--gold); margin-top: 10px; display: flex; align-items: center; gap: 6px;
+  }
+  .slide-card-cta::after { content: '↗'; font-size: 11px; }
+  @media (max-width: 640px) { .slides-grid { grid-template-columns: 1fr; } }
+
   /* ── FOOTER ── */
   footer {
     border-top: 1px solid var(--border-dim);
@@ -544,6 +595,37 @@
       </div>
 
     </div><!-- /module-grid -->
+  </div>
+</section>
+
+<!-- ── LECTURE SLIDES ── -->
+<section class="slides-section">
+  <div class="wrap">
+    <div class="slides-section-label">Course Materials</div>
+    <div class="slides-section-title">Lecture <em>Slides</em></div>
+    <div class="slides-grid">
+
+      <a class="slide-card" href="slides/Introduction_to_Options.pdf" target="_blank">
+        <div class="slide-card-icon">🎓</div>
+        <div class="slide-card-body">
+          <div class="slide-card-type">Lecture Slides · PDF · Ch. 20</div>
+          <div class="slide-card-title">Introduction to Options</div>
+          <div class="slide-card-desc">Calls, puts, payoff diagrams, protective puts, covered calls, put-call parity, and options strategies including straddles and spreads.</div>
+          <div class="slide-card-cta">Open slide deck</div>
+        </div>
+      </a>
+
+      <a class="slide-card" href="slides/DerivativesOptions_Futures_and_Swaps.pdf" target="_blank">
+        <div class="slide-card-icon">🎓</div>
+        <div class="slide-card-body">
+          <div class="slide-card-type">Lecture Slides · PDF · Ch. 20–23</div>
+          <div class="slide-card-title">Derivatives &amp; Risk Management</div>
+          <div class="slide-card-desc">Full unit deck covering options intro, Black-Scholes valuation, futures markets, index futures, interest rate swaps, and credit default swaps.</div>
+          <div class="slide-card-cta">Open slide deck</div>
+        </div>
+      </a>
+
+    </div>
   </div>
 </section>
 
